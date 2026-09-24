@@ -1,12 +1,12 @@
 """Splits generate_qa_multidoc.py's combined output into same-patient and cross-patient files."""
 
 import json
-from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
-INPUT_PATH = BASE_DIR / "multidoc_rulebased.jsonl"
-SAME_PATIENT_OUTPUT = BASE_DIR / "multidoc_dataset_rulebased_main_same_patient.jsonl"
-CROSS_PATIENT_OUTPUT = BASE_DIR / "multidoc_dataset_rulebased_cross_patient.jsonl"
+from shared.pipeline_paths import (
+    MULTIDOC_CROSS_PATIENT_PATH as CROSS_PATIENT_OUTPUT,
+    MULTIDOC_QA_PATH as INPUT_PATH,
+    MULTIDOC_SAME_PATIENT_PATH as SAME_PATIENT_OUTPUT,
+)
 
 SAME_PATIENT_TYPES = {"same_patient_two_admissions", "same_patient_three_admission_trajectory"}
 

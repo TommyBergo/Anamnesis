@@ -1,40 +1,46 @@
-"""Selects a stratified multi-category patient sample from raw MIMIC-III CSVs and writes it to mimic_stratified_sample.json."""
+"""Selects a demographically stratified patient sample from MIMIC-IV (hosp, icu, and note modules) and writes it to mimic_stratified_sample.json."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import random
 from collections import Counter, defaultdict
+from pathlib import Path
 
 import pandas as pd
 
-from shared.mimic_common import compute_age
+from shared.mimic_common import compute_age_at_admission, compute_los_days
+from shared.mimic_iv import (
+    NOTE_CATEGORY_ORDER,
+    NOTE_COLUMNS,
+    NOTE_SOURCES,
+    REQUIRED_NOTE_TABLES,
+    NoteSource,
+    find_table,
+    label_admission_type,
+    label_discharge_location,
+    label_note_type,
+    label_service,
+    module_dirs,
+    race_group,
+    require_table,
+)
+from shared.pipeline_paths import DEFAULT_DATA_DIR, SAMPLE_JSON, SAMPLE_REPORT_MD
 
-BASE_DIR = "/gringotts/datasets/MIMIC-III"
-OUTPUT_JSON = "mimic_stratified_sample.json"
-REPORT_MD = "mimic_stratified_sample_report.md"
+# Balanced marginally (one variable at a time) so that adding a variable never fragments the
+# population into near-empty joint strata.
+STRATUM_VARIABLES = ["gender", "age_quintile", "race_group", "note_length_quintile"]
 
-INNER_STRATUM_VARIABLES = ["gender", "age_quintile", "note_length_quintile"]
-
-# Categorie di note cliniche incluse (non più solo Discharge summary)
-TARGET_CATEGORIES = {
-    "Discharge summary",
-    "Radiology",
-    "Nursing",
-    "Physician",
-    "Consult",
+STRATUM_LABELS = {
+    "gender": "Sex",
+    "age_quintile": "Age quintile",
+    "race_group": "Race group",
+    "note_length_quintile": "Note-length quintile",
 }
 
-def get_file_path(base_dir: str, filename: str) -> str:
-    gz_path = os.path.join(base_dir, f"{filename}.csv.gz")
-    csv_path = os.path.join(base_dir, f"{filename}.csv")
-    if os.path.exists(gz_path):
-        return gz_path
-    if os.path.exists(csv_path):
-        return csv_path
-    raise FileNotFoundError(f"Could not find {filename} (.csv or .csv.gz) in {base_dir}")
+NOTE_CHUNK_ROWS = 100_000
+
 
 def quintile_bucket(value: float, sorted_values: list[float]) -> str:
     n = len(sorted_values)
@@ -44,266 +50,401 @@ def quintile_bucket(value: float, sorted_values: list[float]) -> str:
             return label
     return "Q5_80-100"
 
-def phase1_note_length_index(noteevents_path: str) -> pd.DataFrame:
-    print(f"Phase 1: streaming {os.path.basename(noteevents_path)} for multi-category note lengths...")
-    lengths: dict[tuple[int, int], int] = defaultdict(int)
-    rows_seen = 0
+
+def available_note_sources(note_dirs: list[Path]) -> list[tuple[NoteSource, Path]]:
+    available = []
+    for source in NOTE_SOURCES:
+        path = find_table(note_dirs, source.table)
+        if path is None:
+            if source.table in REQUIRED_NOTE_TABLES:
+                require_table(note_dirs, source.table)
+            print(f"  note source '{source.table}' ({source.category}) not found - skipped")
+            continue
+        print(f"  note source '{source.table}' ({source.category}): {path}")
+        available.append((source, path))
+    return available
+
+
+def stream_notes(path: Path):
     for chunk in pd.read_csv(
-        noteevents_path, usecols=["SUBJECT_ID", "HADM_ID", "CATEGORY", "TEXT"],
-        dtype={"SUBJECT_ID": "Int64", "HADM_ID": "Int64", "CATEGORY": str, "TEXT": str},
-        chunksize=100_000, low_memory=False,
+        path,
+        usecols=NOTE_COLUMNS,
+        dtype={"note_id": str, "subject_id": "Int64", "hadm_id": "Int64", "note_type": str, "text": str},
+        chunksize=NOTE_CHUNK_ROWS,
+        low_memory=False,
     ):
-        rows_seen += len(chunk)
-        valid_notes = chunk[chunk["CATEGORY"].isin(TARGET_CATEGORIES) & chunk["HADM_ID"].notna()]
-        for subj, hadm, text in zip(valid_notes["SUBJECT_ID"], valid_notes["HADM_ID"], valid_notes["TEXT"]):
-            lengths[(int(subj), int(hadm))] += len(str(text).strip())
-        if rows_seen % 1_000_000 < 100_000:
-            print(f"  ... {rows_seen:,} rows scanned, {len(lengths):,} admissions with target notes so far")
-    print(f"Phase 1 done: {len(lengths):,} admissions have target clinical notes")
+        yield chunk[chunk["hadm_id"].notna() & chunk["text"].notna()]
+
+
+def phase1_note_length_index(note_sources: list[tuple[NoteSource, Path]]) -> pd.DataFrame:
+    print("Phase 1: streaming clinical-note tables for per-admission note lengths...")
+    lengths: dict[tuple[int, int], int] = defaultdict(int)
+    for source, path in note_sources:
+        rows_seen = 0
+        for chunk in stream_notes(path):
+            rows_seen += len(chunk)
+            for subj, hadm, text in zip(chunk["subject_id"], chunk["hadm_id"], chunk["text"]):
+                lengths[(int(subj), int(hadm))] += len(text.strip())
+        print(f"  {source.table}: {rows_seen:,} notes linked to an admission")
+    print(f"Phase 1 done: {len(lengths):,} admissions have at least one clinical note")
     return pd.DataFrame(
         [(subj, hadm, length) for (subj, hadm), length in lengths.items()],
-        columns=["SUBJECT_ID", "HADM_ID", "note_length"],
+        columns=["subject_id", "hadm_id", "note_length"],
     )
 
-def load_diagnoses(diagnoses_path: str) -> pd.DataFrame:
-    print(f"Loading {os.path.basename(diagnoses_path)}...")
-    diagnoses = pd.read_csv(diagnoses_path, usecols=["SUBJECT_ID", "HADM_ID", "ICD9_CODE"])
-    diagnoses = diagnoses.dropna(subset=["HADM_ID", "ICD9_CODE"])
-    agg = diagnoses.groupby(["SUBJECT_ID", "HADM_ID"]).agg(
-        num_diagnoses=("ICD9_CODE", "count"),
-    ).reset_index()
-    print(f"  {len(agg):,} admissions have >=1 diagnosis code")
-    return agg
 
-def load_icustays(icustays_path: str) -> pd.DataFrame:
-    print(f"Loading {os.path.basename(icustays_path)}...")
-    icu = pd.read_csv(icustays_path, usecols=["SUBJECT_ID", "HADM_ID"]).dropna(subset=["HADM_ID"])
-    icu = icu.drop_duplicates(subset=["SUBJECT_ID", "HADM_ID"])
+def load_principal_diagnoses(diagnoses_path: Path, dictionary_path: Path) -> pd.DataFrame:
+    print(f"Loading {diagnoses_path.name} and {dictionary_path.name}...")
+    diagnoses = pd.read_csv(
+        diagnoses_path,
+        usecols=["subject_id", "hadm_id", "seq_num", "icd_code", "icd_version"],
+        dtype={"icd_code": str},
+    ).dropna(subset=["hadm_id", "icd_code"])
+    dictionary = pd.read_csv(dictionary_path, dtype={"icd_code": str})
+    dictionary["icd_code"] = dictionary["icd_code"].str.strip()
+    diagnoses["icd_code"] = diagnoses["icd_code"].str.strip()
+
+    counts = diagnoses.groupby(["subject_id", "hadm_id"]).size().rename("num_diagnoses").reset_index()
+
+    principal = (
+        diagnoses.sort_values("seq_num")
+        .groupby(["subject_id", "hadm_id"], as_index=False)
+        .first()
+        .merge(dictionary, on=["icd_code", "icd_version"], how="left")
+        .rename(columns={"long_title": "diagnosis", "icd_code": "principal_icd_code", "icd_version": "principal_icd_version"})
+    )
+    principal = principal[["subject_id", "hadm_id", "diagnosis", "principal_icd_code", "principal_icd_version"]]
+    merged = counts.merge(principal, on=["subject_id", "hadm_id"], how="left")
+    print(f"  {len(merged):,} admissions have >=1 diagnosis code")
+    return merged
+
+
+def load_icustays(icustays_path: Path) -> pd.DataFrame:
+    print(f"Loading {icustays_path.name}...")
+    icu = pd.read_csv(icustays_path, usecols=["subject_id", "hadm_id"]).dropna(subset=["hadm_id"])
+    icu = icu.drop_duplicates(subset=["subject_id", "hadm_id"])
     icu["had_icu_stay"] = True
-    return icu[["SUBJECT_ID", "HADM_ID", "had_icu_stay"]]
+    return icu
 
-def load_services(services_path: str) -> pd.DataFrame:
-    print(f"Loading {os.path.basename(services_path)}...")
-    services = pd.read_csv(services_path, usecols=["SUBJECT_ID", "HADM_ID", "TRANSFERTIME", "CURR_SERVICE"])
-    services = services.dropna(subset=["HADM_ID"]).sort_values("TRANSFERTIME")
-    first_service = services.groupby(["SUBJECT_ID", "HADM_ID"], as_index=False).first()
-    return first_service[["SUBJECT_ID", "HADM_ID", "CURR_SERVICE"]].rename(columns={"CURR_SERVICE": "service"})
 
-def select_patients_stratified(representative: pd.DataFrame, n: int, seed: int) -> tuple[list[int], dict]:
+def load_services(services_path: Path) -> pd.DataFrame:
+    print(f"Loading {services_path.name}...")
+    services = pd.read_csv(services_path, usecols=["subject_id", "hadm_id", "transfertime", "curr_service"])
+    services = services.dropna(subset=["hadm_id"]).sort_values("transfertime")
+    first_service = services.groupby(["subject_id", "hadm_id"], as_index=False).first()
+    return first_service[["subject_id", "hadm_id", "curr_service"]].rename(columns={"curr_service": "service_code"})
+
+
+def join_admission_attributes(
+    admissions: pd.DataFrame,
+    diagnoses: pd.DataFrame,
+    icustays: pd.DataFrame,
+    services: pd.DataFrame,
+) -> pd.DataFrame:
+    keys = ["subject_id", "hadm_id"]
+    merged = admissions.merge(diagnoses, on=keys, how="left")
+    merged = merged.merge(icustays, on=keys, how="left")
+    merged = merged.merge(services, on=keys, how="left")
+    merged["num_diagnoses"] = merged["num_diagnoses"].fillna(0).astype(int)
+    merged["had_icu_stay"] = merged["had_icu_stay"].eq(True)
+    return merged
+
+
+def select_patients_stratified(representative: pd.DataFrame, n: int, seed: int) -> list[int]:
     population_n = len(representative)
-    group_counts = Counter(tuple(row[v] for v in INNER_STRATUM_VARIABLES) for _, row in representative.iterrows())
-    
+    target_share = {
+        variable: representative[variable].value_counts(normalize=True).to_dict()
+        for variable in STRATUM_VARIABLES
+    }
+
     rng = random.Random(seed)
-    order = list(representative["SUBJECT_ID"])
+    order = sorted(representative["subject_id"].tolist())
     rng.shuffle(order)
-    by_subject = {row["SUBJECT_ID"]: row for _, row in representative.iterrows()}
+    by_subject = representative.set_index("subject_id").to_dict("index")
 
     selected: list[int] = []
-    current_counts: Counter = Counter()
-    
+    selected_set: set[int] = set()
+    marginal_counts: dict[str, Counter] = {variable: Counter() for variable in STRATUM_VARIABLES}
+
     for relaxed in (False, True):
         for subj in order:
             if len(selected) >= n:
                 break
-            if subj in selected:
+            if subj in selected_set:
                 continue
             row = by_subject[subj]
-            key = tuple(row[v] for v in INNER_STRATUM_VARIABLES)
-            target_share = group_counts[key] / population_n
-            current_share = current_counts.get(key, 0) / max(1, len(selected) + 1)
-            if relaxed or current_share <= target_share:
+            within_targets = all(
+                marginal_counts[variable][row[variable]] / (len(selected) + 1)
+                <= target_share[variable][row[variable]]
+                for variable in STRATUM_VARIABLES
+            )
+            if relaxed or within_targets:
                 selected.append(subj)
-                current_counts[key] += 1
-        if len(selected) >= n:
-            break
+                selected_set.add(subj)
+                for variable in STRATUM_VARIABLES:
+                    marginal_counts[variable][row[variable]] += 1
 
-    balance_info = {
-        "population_n": population_n,
-        "representative": representative,
-    }
-    return selected[:n], balance_info
+    if n >= population_n:
+        print(f"  requested n={n} >= eligible population ({population_n}); every eligible patient is kept")
+    return selected[:n]
+
 
 def phase2_select_patients(
     note_index: pd.DataFrame,
     patients: pd.DataFrame,
     admissions: pd.DataFrame,
-    diagnoses: pd.DataFrame,
-    icustays: pd.DataFrame,
-    services: pd.DataFrame,
     n: int,
     seed: int,
-) -> tuple[list[int], dict]:
-    print("Phase 2: joining tables and selecting extended patient sample...")
-    patients_named = patients.rename(columns={"GENDER": "gender"})
+) -> tuple[list[int], pd.DataFrame]:
+    print("Phase 2: joining tables and selecting a stratified patient sample...")
+    merged = note_index.merge(admissions, on=["subject_id", "hadm_id"], how="inner")
+    merged = merged.merge(patients, on="subject_id", how="inner")
+    merged = merged.dropna(subset=["admittime", "anchor_age", "anchor_year"])
+    print(f"  {len(merged):,} admissions with notes fully joined")
 
-    merged = note_index.merge(admissions, on=["SUBJECT_ID", "HADM_ID"], how="inner")
-    merged = merged.merge(patients_named, on="SUBJECT_ID", how="inner")
-    merged = merged.merge(diagnoses, on=["SUBJECT_ID", "HADM_ID"], how="left")
-    merged = merged.merge(icustays, on=["SUBJECT_ID", "HADM_ID"], how="left")
-    merged = merged.merge(services, on=["SUBJECT_ID", "HADM_ID"], how="left")
-    
-    merged["num_diagnoses"] = merged["num_diagnoses"].fillna(0).astype(int)
-    merged["had_icu_stay"] = merged["had_icu_stay"].fillna(False)
-    merged["service"] = merged["service"].fillna("UNKNOWN")
-    merged = merged.dropna(subset=["DOB", "ADMITTIME"])
-    print(f"  {len(merged):,} admissions fully joined")
+    merged["age"] = [
+        compute_age_at_admission(age, year, admit)
+        for age, year, admit in zip(merged["anchor_age"], merged["anchor_year"], merged["admittime"])
+    ]
+    merged = merged.dropna(subset=["age"])
+    merged["race_group"] = merged["race"].map(race_group)
 
-    merged["age"] = merged.apply(lambda row: compute_age(row["DOB"], row["ADMITTIME"]), axis=1)
-
-    representative = merged.sort_values("ADMITTIME").groupby("SUBJECT_ID", as_index=False).first()
-    print(f"  {len(representative):,} unique candidate patients")
+    representative = merged.sort_values(["admittime", "hadm_id"]).groupby("subject_id", as_index=False).first()
+    print(f"  {len(representative):,} unique candidate patients (no diagnosis-based filtering)")
 
     ages_sorted = sorted(representative["age"].tolist())
     note_len_sorted = sorted(representative["note_length"].tolist())
     representative = representative.copy()
     representative["age_quintile"] = representative["age"].apply(lambda a: quintile_bucket(a, ages_sorted))
-    representative["note_length_quintile"] = representative["note_length"].apply(lambda x: quintile_bucket(x, note_len_sorted))
+    representative["note_length_quintile"] = representative["note_length"].apply(
+        lambda x: quintile_bucket(x, note_len_sorted)
+    )
 
-    selected_subject_ids, balance_info = select_patients_stratified(representative, n=n, seed=seed)
+    selected_subject_ids = select_patients_stratified(representative, n=n, seed=seed)
     print(f"Phase 2 done: selected {len(selected_subject_ids)} patients")
-    return selected_subject_ids, balance_info
+    return selected_subject_ids, representative
 
-def phase3_pull_full_records(
+
+def load_note_details(detail_path: Path | None, note_ids: set[str]) -> dict[str, dict[str, str]]:
+    details: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+    if detail_path is None or not note_ids:
+        return {}
+    for chunk in pd.read_csv(detail_path, dtype=str, chunksize=NOTE_CHUNK_ROWS):
+        chunk = chunk[chunk["note_id"].isin(note_ids)]
+        for note_id, field_name, field_value in zip(chunk["note_id"], chunk["field_name"], chunk["field_value"]):
+            if pd.notna(field_name) and pd.notna(field_value):
+                details[note_id][str(field_name)].append(str(field_value))
+    return {
+        note_id: {name: "; ".join(values) for name, values in fields.items()}
+        for note_id, fields in details.items()
+    }
+
+
+def phase3_pull_notes(
+    selected_set: set[int],
+    note_sources: list[tuple[NoteSource, Path]],
+    note_dirs: list[Path],
+) -> dict[tuple[int, int], list[dict]]:
+    print("Phase 3: streaming clinical-note tables for the selected patients' full text...")
+    notes_by_admission: dict[tuple[int, int], list[dict]] = defaultdict(list)
+
+    for source, path in note_sources:
+        source_notes: list[tuple[tuple[int, int], dict]] = []
+        for chunk in stream_notes(path):
+            chunk = chunk[chunk["subject_id"].isin(selected_set)]
+            for row in chunk.itertuples(index=False):
+                note = {
+                    "note_id": str(row.note_id),
+                    "category": source.category,
+                    "note_type": str(row.note_type) if pd.notna(row.note_type) else "",
+                    "note_type_label": label_note_type(row.note_type),
+                    "note_seq": int(row.note_seq) if pd.notna(row.note_seq) else 0,
+                    "charttime": str(row.charttime) if pd.notna(row.charttime) else "",
+                    "text": row.text.strip(),
+                }
+                source_notes.append(((int(row.subject_id), int(row.hadm_id)), note))
+
+        details = load_note_details(
+            find_table(note_dirs, source.detail_table),
+            {note["note_id"] for _, note in source_notes},
+        )
+        for key, note in source_notes:
+            note["details"] = details.get(note["note_id"], {})
+            notes_by_admission[key].append(note)
+        print(f"  {source.table}: {len(source_notes):,} notes for selected patients")
+
+    category_rank = {category: rank for rank, category in enumerate(NOTE_CATEGORY_ORDER)}
+    for notes in notes_by_admission.values():
+        notes.sort(key=lambda note: (category_rank[note["category"]], note["charttime"], note["note_seq"], note["note_id"]))
+
+    print(f"Phase 3 done: clinical notes found for {len(notes_by_admission):,} admissions")
+    return notes_by_admission
+
+
+def optional_str(value: object) -> str | None:
+    return None if value is None or pd.isna(value) else str(value)
+
+
+def build_records(
     selected_subject_ids: list[int],
     patients: pd.DataFrame,
-    admissions: pd.DataFrame,
-    diagnoses: pd.DataFrame,
-    icustays: pd.DataFrame,
-    services: pd.DataFrame,
-    noteevents_path: str,
+    admission_attributes: pd.DataFrame,
+    notes_by_admission: dict[tuple[int, int], list[dict]],
 ) -> list[dict]:
-    print("Phase 3: streaming NOTEEVENTS to pull full multi-category text for selected patients...")
-    selected_set = set(selected_subject_ids)
-
-    patients = patients[patients["SUBJECT_ID"].isin(selected_set)]
-    admissions = admissions[admissions["SUBJECT_ID"].isin(selected_set)]
-
-    extras = admissions[["SUBJECT_ID", "HADM_ID"]].merge(diagnoses, on=["SUBJECT_ID", "HADM_ID"], how="left")
-    extras = extras.merge(icustays, on=["SUBJECT_ID", "HADM_ID"], how="left")
-    extras = extras.merge(services, on=["SUBJECT_ID", "HADM_ID"], how="left")
-    extras["num_diagnoses"] = extras["num_diagnoses"].fillna(0).astype(int)
-    extras["had_icu_stay"] = extras["had_icu_stay"].fillna(False)
-    extras["service"] = extras["service"].fillna("UNKNOWN")
-    extras_by_adm = {(r["SUBJECT_ID"], r["HADM_ID"]): r for _, r in extras.iterrows()}
-
-    notes_by_admission: dict[tuple[int, int], list[str]] = defaultdict(list)
-    rows_seen = 0
-    for chunk in pd.read_csv(
-        noteevents_path, usecols=["SUBJECT_ID", "HADM_ID", "CATEGORY", "TEXT"],
-        dtype={"SUBJECT_ID": "Int64", "HADM_ID": "Int64", "CATEGORY": str, "TEXT": str},
-        chunksize=100_000, low_memory=False,
-    ):
-        rows_seen += len(chunk)
-        f = chunk[
-            chunk["CATEGORY"].isin(TARGET_CATEGORIES)
-            & chunk["HADM_ID"].notna()
-            & chunk["SUBJECT_ID"].isin(selected_set)
-        ]
-        for subj, hadm, cat, text in zip(f["SUBJECT_ID"], f["HADM_ID"], f["CATEGORY"], f["TEXT"]):
-            formatted_note = f"[Category: {cat}]\n{str(text).strip()}"
-            notes_by_admission[(int(subj), int(hadm))].append(formatted_note)
-            
-    print(f"  scanned {rows_seen:,} rows, found clinical notes for {len(notes_by_admission):,} admissions")
-
+    patients_by_id = patients.set_index("subject_id").to_dict("index")
     final_data = []
-    for _, p_row in patients.iterrows():
-        subj_id = int(p_row["SUBJECT_ID"])
-        patient_dict = {
+
+    for subj_id in sorted(selected_subject_ids):
+        p_row = patients_by_id[subj_id]
+        p_admissions = admission_attributes[admission_attributes["subject_id"] == subj_id].sort_values(
+            ["admittime", "hadm_id"]
+        )
+        admissions = []
+        for a_row in p_admissions.to_dict("records"):
+            hadm_id = int(a_row["hadm_id"])
+            notes = notes_by_admission.get((subj_id, hadm_id))
+            if not notes:
+                continue
+            admissions.append({
+                "hadm_id": hadm_id,
+                "admittime": str(a_row["admittime"]),
+                "dischtime": str(a_row["dischtime"]),
+                "admission_type": label_admission_type(a_row.get("admission_type")),
+                "admission_type_code": optional_str(a_row.get("admission_type")),
+                "diagnosis": optional_str(a_row.get("diagnosis")) or "",
+                "principal_icd_code": optional_str(a_row.get("principal_icd_code")),
+                "principal_icd_version": (
+                    int(a_row["principal_icd_version"]) if pd.notna(a_row.get("principal_icd_version")) else None
+                ),
+                "age_at_admission": compute_age_at_admission(p_row["anchor_age"], p_row["anchor_year"], a_row["admittime"]),
+                "length_of_stay_days": compute_los_days(a_row["admittime"], a_row["dischtime"]),
+                "discharge_location": label_discharge_location(a_row.get("discharge_location")),
+                "discharge_location_code": optional_str(a_row.get("discharge_location")),
+                "hospital_expire_flag": bool(a_row.get("hospital_expire_flag") or 0),
+                "num_diagnoses": int(a_row["num_diagnoses"]),
+                "had_icu_stay": bool(a_row["had_icu_stay"]),
+                "service": label_service(a_row.get("service_code")) or None,
+                "service_code": optional_str(a_row.get("service_code")),
+                "insurance": optional_str(a_row.get("insurance")),
+                "race": optional_str(a_row.get("race")),
+                "note_categories": dict(Counter(note["category"] for note in notes)),
+                "notes": notes,
+            })
+        if not admissions:
+            continue
+        final_data.append({
             "patient_info": {
                 "subject_id": subj_id,
-                "gender": str(p_row.get("GENDER", "")),
-                "dob": str(p_row.get("DOB", "")),
+                "gender": str(p_row["gender"]),
+                "anchor_age": int(p_row["anchor_age"]),
+                "anchor_year": int(p_row["anchor_year"]),
+                "anchor_year_group": optional_str(p_row.get("anchor_year_group")),
+                "race_group": race_group(admissions[0]["race"]),
             },
-            "admissions": [],
-        }
-        p_admissions = admissions[admissions["SUBJECT_ID"] == subj_id]
-        for _, a_row in p_admissions.iterrows():
-            if pd.isna(a_row["HADM_ID"]):
-                continue
-            hadm_id = int(a_row["HADM_ID"])
-            texts = notes_by_admission.get((subj_id, hadm_id))
-            if not texts:
-                continue
-            extra = extras_by_adm.get((subj_id, hadm_id))
-            patient_dict["admissions"].append({
-                "hadm_id": hadm_id,
-                "admission_type": str(a_row.get("ADMISSION_TYPE", "")),
-                "diagnosis": str(a_row.get("DIAGNOSIS", "")),
-                "admittime": str(a_row.get("ADMITTIME", "")),
-                "dischtime": str(a_row.get("DISCHTIME", "")),
-                "clinical_notes": "\n\n--- NEXT NOTE ---\n\n".join(texts),
-                "hospital_expire_flag": bool(a_row.get("HOSPITAL_EXPIRE_FLAG", 0)),
-                "num_diagnoses": int(extra["num_diagnoses"]) if extra is not None else 0,
-                "had_icu_stay": bool(extra["had_icu_stay"]) if extra is not None else False,
-                "service": str(extra["service"]) if extra is not None else "UNKNOWN",
-            })
-        if patient_dict["admissions"]:
-            final_data.append(patient_dict)
-
-    print(f"Phase 3 done: {len(final_data)} patients with full records extracted")
+            "admissions": admissions,
+        })
     return final_data
 
-def write_balance_report(balance_info: dict, n: int, seed: int, selected_subject_ids: list[int]):
-    representative = balance_info["representative"]
-    selected_set = set(selected_subject_ids)
-    selected_df = representative[representative["SUBJECT_ID"].isin(selected_set)]
 
-    with open(REPORT_MD, "w", encoding="utf-8") as f:
-        f.write(f"# MIMIC-III stratified patient selection report (n={n}, seed={seed})\n\n")
+def write_balance_report(
+    representative: pd.DataFrame,
+    n: int,
+    seed: int,
+    selected_subject_ids: list[int],
+    final_data: list[dict],
+) -> None:
+    selected_df = representative[representative["subject_id"].isin(set(selected_subject_ids))]
+    category_totals: Counter = Counter()
+    for patient in final_data:
+        for adm in patient["admissions"]:
+            category_totals.update(adm["note_categories"])
+
+    def proportions(df: pd.DataFrame, col: str) -> dict:
+        counts = df[col].value_counts()
+        total = len(df)
+        return {str(k): f"{v}/{total} ({100 * v / total:.1f}%)" for k, v in counts.items()}
+
+    with SAMPLE_REPORT_MD.open("w", encoding="utf-8") as f:
+        f.write(f"# MIMIC-IV stratified patient selection report (n={n}, seed={seed})\n\n")
         f.write(
-            f"Selected from the full population of {balance_info['population_n']:,} MIMIC-III "
-            "patients with >=1 target clinical note. Stratification variables: sex, age quintile, "
-            "and total note-length quintile.\n\n"
+            f"Selected from the full population of {len(representative):,} MIMIC-IV patients with >=1 "
+            "clinical note linked to an admission. No diagnosis-based inclusion or exclusion is applied. "
+            "Marginally balanced variables: " + ", ".join(STRATUM_LABELS[v].lower() for v in STRATUM_VARIABLES) + ".\n\n"
         )
+        f.write(
+            f"Selected patients: {len(final_data)}; admissions: "
+            f"{sum(len(p['admissions']) for p in final_data)}.\n\n"
+        )
+        f.write("## Clinical notes by category (selected admissions)\n\n| Category | Notes |\n|---|---|\n")
+        for category in NOTE_CATEGORY_ORDER:
+            f.write(f"| {category} | {category_totals.get(category, 0)} |\n")
 
-        def proportions(df: pd.DataFrame, col: str) -> dict:
-            counts = df[col].value_counts()
-            total = len(df)
-            return {str(k): f"{v}/{total} ({100*v/total:.1f}%)" for k, v in counts.items()}
-
-        f.write("\n## Stratum marginals: population vs selected\n\n")
-        for label, col in [("Sex", "gender"), ("Age quintile", "age_quintile"), ("Note-length quintile", "note_length_quintile")]:
-            f.write(f"\n### {label}\n\n| Value | Population | Selected |\n|---|---|---|\n")
+        f.write("\n## Stratum marginals: population vs selected\n")
+        for col in STRATUM_VARIABLES:
+            f.write(f"\n### {STRATUM_LABELS[col]}\n\n| Value | Population | Selected |\n|---|---|---|\n")
             pop_props = proportions(representative, col)
             sel_props = proportions(selected_df, col)
             for value in sorted(set(pop_props) | set(sel_props)):
                 f.write(f"| {value} | {pop_props.get(value, '0')} | {sel_props.get(value, '0')} |\n")
 
-    print(f"Wrote {REPORT_MD}")
+    print(f"Wrote {SAMPLE_REPORT_MD}")
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--n", type=int, default=300, help="number of patients to select (extended sample)")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--n", type=int, default=300, help="number of patients to select")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--base-dir", type=str, default=BASE_DIR)
+    parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR, help="MIMIC-IV root (hosp/, icu/, note/)")
+    parser.add_argument(
+        "--note-dir", type=Path, default=None,
+        help="MIMIC-IV-Note folder, if it is not <data-dir>/note (the note module is a separate PhysioNet release)",
+    )
     args = parser.parse_args()
 
-    noteevents_path = get_file_path(args.base_dir, "NOTEEVENTS")
-    note_index = phase1_note_length_index(noteevents_path)
+    data_dir: Path = args.data_dir
+    hosp_dirs = module_dirs(data_dir, "hosp")
+    icu_dirs = module_dirs(data_dir, "icu")
+    note_dirs = ([args.note_dir] if args.note_dir else []) + module_dirs(data_dir, "note")
+    print(f"MIMIC-IV data directory: {data_dir}")
+
+    note_sources = available_note_sources(note_dirs)
+    note_index = phase1_note_length_index(note_sources)
 
     print("Loading auxiliary tables once...")
-    patients = pd.read_csv(get_file_path(args.base_dir, "PATIENTS"), usecols=["SUBJECT_ID", "GENDER", "DOB"])
+    patients = pd.read_csv(
+        require_table(hosp_dirs, "patients"),
+        usecols=["subject_id", "gender", "anchor_age", "anchor_year", "anchor_year_group"],
+    )
     admissions = pd.read_csv(
-        get_file_path(args.base_dir, "ADMISSIONS"),
-        usecols=["SUBJECT_ID", "HADM_ID", "ADMITTIME", "DISCHTIME", "ADMISSION_TYPE", "DIAGNOSIS", "HOSPITAL_EXPIRE_FLAG"],
+        require_table(hosp_dirs, "admissions"),
+        usecols=[
+            "subject_id", "hadm_id", "admittime", "dischtime", "admission_type",
+            "discharge_location", "insurance", "race", "hospital_expire_flag",
+        ],
     )
-    diagnoses = load_diagnoses(get_file_path(args.base_dir, "DIAGNOSES_ICD"))
-    icustays = load_icustays(get_file_path(args.base_dir, "ICUSTAYS"))
-    services = load_services(get_file_path(args.base_dir, "SERVICES"))
-
-    selected_subject_ids, balance_info = phase2_select_patients(
-        note_index, patients, admissions, diagnoses, icustays, services, n=args.n, seed=args.seed
+    diagnoses = load_principal_diagnoses(
+        require_table(hosp_dirs, "diagnoses_icd"), require_table(hosp_dirs, "d_icd_diagnoses")
     )
-    write_balance_report(balance_info, n=args.n, seed=args.seed, selected_subject_ids=selected_subject_ids)
+    icustays = load_icustays(require_table(icu_dirs, "icustays"))
+    services = load_services(require_table(hosp_dirs, "services"))
+    admission_attributes = join_admission_attributes(admissions, diagnoses, icustays, services)
 
-    final_data = phase3_pull_full_records(
-        selected_subject_ids, patients, admissions, diagnoses, icustays, services, noteevents_path
+    selected_subject_ids, representative = phase2_select_patients(
+        note_index, patients, admissions, n=args.n, seed=args.seed
     )
 
-    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
+    notes_by_admission = phase3_pull_notes(set(selected_subject_ids), note_sources, note_dirs)
+    final_data = build_records(selected_subject_ids, patients, admission_attributes, notes_by_admission)
+    SAMPLE_JSON.parent.mkdir(parents=True, exist_ok=True)
+    write_balance_report(representative, args.n, args.seed, selected_subject_ids, final_data)
+
+    with SAMPLE_JSON.open("w", encoding="utf-8") as f:
         json.dump(final_data, f, indent=2, ensure_ascii=False)
-    print(f"Wrote {OUTPUT_JSON} ({len(final_data)} patients, "
-          f"{sum(len(p['admissions']) for p in final_data)} admissions)")
+    print(
+        f"Wrote {SAMPLE_JSON} ({len(final_data)} patients, "
+        f"{sum(len(p['admissions']) for p in final_data)} admissions)"
+    )
+
 
 if __name__ == "__main__":
     main()

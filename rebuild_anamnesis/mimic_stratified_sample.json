@@ -1,0 +1,2996 @@
+[
+  {
+    "patient_info": {
+      "subject_id": 10004422,
+      "gender": "M",
+      "anchor_age": 78,
+      "anchor_year": 2111,
+      "anchor_year_group": "2011 - 2013",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 21255400,
+        "admittime": "2111-01-15 14:55:00",
+        "dischtime": "2111-01-25 15:00:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Coronary atherosclerosis of native coronary artery",
+        "principal_icd_code": "41401",
+        "principal_icd_version": 9,
+        "age_at_admission": 78,
+        "length_of_stay_days": 10,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 16,
+        "had_icu_stay": true,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10004422-a80c36df",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2111-01-25 15:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10004422-240d9de0",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2111-01-25 15:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10005348,
+      "gender": "M",
+      "anchor_age": 76,
+      "anchor_year": 2128,
+      "anchor_year_group": "2011 - 2013",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 29496232,
+        "admittime": "2128-09-05 08:30:00",
+        "dischtime": "2128-09-12 16:55:00",
+        "admission_type": "Elective",
+        "admission_type_code": "ELECTIVE",
+        "diagnosis": "Malignant neoplasm of lower lobe, bronchus or lung",
+        "principal_icd_code": "1625",
+        "principal_icd_version": 9,
+        "age_at_admission": 76,
+        "length_of_stay_days": 7,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 28,
+        "had_icu_stay": false,
+        "service": "Thoracic Surgery",
+        "service_code": "TSURG",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10005348-73d993fa",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2128-09-12 16:55:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10005348-f604c9c2",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2128-09-12 16:55:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 29176490,
+        "admittime": "2129-05-22 16:00:00",
+        "dischtime": "2129-05-23 11:30:00",
+        "admission_type": "Direct observation",
+        "admission_type_code": "DIRECT OBSERVATION",
+        "diagnosis": "Coronary atherosclerosis of native coronary artery",
+        "principal_icd_code": "41401",
+        "principal_icd_version": 9,
+        "age_at_admission": 77,
+        "length_of_stay_days": 1,
+        "discharge_location": null,
+        "discharge_location_code": null,
+        "hospital_expire_flag": false,
+        "num_diagnoses": 5,
+        "had_icu_stay": false,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10005348-64f51677",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2129-05-23 11:30:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10005348-9e9db3a6",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2129-05-23 11:30:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 25239799,
+        "admittime": "2130-10-26 17:03:00",
+        "dischtime": "2130-11-02 16:00:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Aortic valve disorders",
+        "principal_icd_code": "4241",
+        "principal_icd_version": 9,
+        "age_at_admission": 78,
+        "length_of_stay_days": 7,
+        "discharge_location": "Skilled nursing facility",
+        "discharge_location_code": "SKILLED NURSING FACILITY",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 28,
+        "had_icu_stay": true,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10005348-0d105792",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2130-11-02 16:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10005348-2c2d3cf8",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2130-11-02 16:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10005817,
+      "gender": "M",
+      "anchor_age": 66,
+      "anchor_year": 2132,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 20626031,
+        "admittime": "2132-12-12 01:43:00",
+        "dischtime": "2132-12-20 15:04:00",
+        "admission_type": "Urgent",
+        "admission_type_code": "URGENT",
+        "diagnosis": "Subendocardial infarction, initial episode of care",
+        "principal_icd_code": "41071",
+        "principal_icd_version": 9,
+        "age_at_admission": 66,
+        "length_of_stay_days": 8,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 26,
+        "had_icu_stay": true,
+        "service": "General Surgery",
+        "service_code": "SURG",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10005817-1bef50d5",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2132-12-20 15:04:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10005817-85529ed4",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2132-12-20 15:04:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 28661809,
+        "admittime": "2135-01-03 21:54:00",
+        "dischtime": "2135-01-19 18:36:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Acute and chronic respiratory failure with hypoxia",
+        "principal_icd_code": "J9621",
+        "principal_icd_version": 10,
+        "age_at_admission": 69,
+        "length_of_stay_days": 16,
+        "discharge_location": null,
+        "discharge_location_code": "DIED",
+        "hospital_expire_flag": true,
+        "num_diagnoses": 25,
+        "had_icu_stay": true,
+        "service": "Oncology",
+        "service_code": "OMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10005817-96924b1a",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2135-01-19 18:36:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10005817-41ddf110",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2135-01-19 18:36:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10006053,
+      "gender": "M",
+      "anchor_age": 52,
+      "anchor_year": 2111,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "Unknown"
+    },
+    "admissions": [
+      {
+        "hadm_id": 22942076,
+        "admittime": "2111-11-13 23:39:00",
+        "dischtime": "2111-11-15 17:20:00",
+        "admission_type": "Urgent",
+        "admission_type_code": "URGENT",
+        "diagnosis": "Hepatic encephalopathy",
+        "principal_icd_code": "5722",
+        "principal_icd_version": 9,
+        "age_at_admission": 52,
+        "length_of_stay_days": 2,
+        "discharge_location": null,
+        "discharge_location_code": "DIED",
+        "hospital_expire_flag": true,
+        "num_diagnoses": 10,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicaid",
+        "race": "UNKNOWN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10006053-306035eb",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2111-11-15 17:20:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10006053-b2648531",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2111-11-15 17:20:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10007058,
+      "gender": "M",
+      "anchor_age": 48,
+      "anchor_year": 2167,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 22954658,
+        "admittime": "2167-11-07 19:05:00",
+        "dischtime": "2167-11-11 14:23:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Non-ST elevation (NSTEMI) myocardial infarction",
+        "principal_icd_code": "I214",
+        "principal_icd_version": 10,
+        "age_at_admission": 48,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 6,
+        "had_icu_stay": true,
+        "service": "Vascular Surgery",
+        "service_code": "VSURG",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10007058-acf19316",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2167-11-11 14:23:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10007058-839181a9",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2167-11-11 14:23:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10008287,
+      "gender": "F",
+      "anchor_age": 43,
+      "anchor_year": 2145,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 22168393,
+        "admittime": "2145-09-28 01:17:00",
+        "dischtime": "2145-10-02 13:35:00",
+        "admission_type": "Surgical same-day admission",
+        "admission_type_code": "SURGICAL SAME DAY ADMISSION",
+        "diagnosis": "Hemangioma of intracranial structures",
+        "principal_icd_code": "D1802",
+        "principal_icd_version": 10,
+        "age_at_admission": 43,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 3,
+        "had_icu_stay": true,
+        "service": "Neurosurgery",
+        "service_code": "NSURG",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10008287-44793ad6",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2145-10-02 13:35:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10008287-1ef36f9a",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2145-10-02 13:35:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10010471,
+      "gender": "F",
+      "anchor_age": 89,
+      "anchor_year": 2155,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 21322534,
+        "admittime": "2155-05-08 17:05:00",
+        "dischtime": "2155-05-10 18:55:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Unspecified atrial fibrillation",
+        "principal_icd_code": "I4891",
+        "principal_icd_version": 10,
+        "age_at_admission": 89,
+        "length_of_stay_days": 2,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 16,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10010471-7f182f7c",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2155-05-10 18:55:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10010471-f458df9f",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2155-05-10 18:55:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 29842315,
+        "admittime": "2155-12-02 19:36:00",
+        "dischtime": "2155-12-07 15:30:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Non-ST elevation (NSTEMI) myocardial infarction",
+        "principal_icd_code": "I214",
+        "principal_icd_version": 10,
+        "age_at_admission": 89,
+        "length_of_stay_days": 5,
+        "discharge_location": null,
+        "discharge_location_code": "DIED",
+        "hospital_expire_flag": true,
+        "num_diagnoses": 30,
+        "had_icu_stay": true,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10010471-25a76d68",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2155-12-07 15:30:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10010471-5ced2db6",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2155-12-07 15:30:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10013049,
+      "gender": "M",
+      "anchor_age": 52,
+      "anchor_year": 2114,
+      "anchor_year_group": "2011 - 2013",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 22675517,
+        "admittime": "2114-06-20 10:15:00",
+        "dischtime": "2114-06-24 16:45:00",
+        "admission_type": "Elective",
+        "admission_type_code": "ELECTIVE",
+        "diagnosis": "Benign neoplasm of heart",
+        "principal_icd_code": "2127",
+        "principal_icd_version": 9,
+        "age_at_admission": 52,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 5,
+        "had_icu_stay": true,
+        "service": "Cardiac Surgery",
+        "service_code": "CSURG",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10013049-46308eb0",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2114-06-24 16:45:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10013049-04bd02ec",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2114-06-24 16:45:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10016742,
+      "gender": "F",
+      "anchor_age": 58,
+      "anchor_year": 2178,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "Black"
+    },
+    "admissions": [
+      {
+        "hadm_id": 29281842,
+        "admittime": "2178-07-03 21:13:00",
+        "dischtime": "2178-07-08 20:20:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Ventilator associated pneumonia",
+        "principal_icd_code": "J95851",
+        "principal_icd_version": 10,
+        "age_at_admission": 58,
+        "length_of_stay_days": 5,
+        "discharge_location": "Skilled nursing facility",
+        "discharge_location_code": "SKILLED NURSING FACILITY",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 25,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicaid",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10016742-6ebe9145",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2178-07-08 20:20:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10016742-5b9c9744",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2178-07-08 20:20:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 28506150,
+        "admittime": "2178-07-13 05:40:00",
+        "dischtime": "2178-07-16 02:00:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Altered mental status, unspecified",
+        "principal_icd_code": "R4182",
+        "principal_icd_version": 10,
+        "age_at_admission": 58,
+        "length_of_stay_days": 3,
+        "discharge_location": "Skilled nursing facility",
+        "discharge_location_code": "SKILLED NURSING FACILITY",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 18,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicaid",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10016742-4e3e2bae",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2178-07-16 02:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10016742-75d6df0d",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2178-07-16 02:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 27568122,
+        "admittime": "2178-07-22 07:19:00",
+        "dischtime": "2178-07-25 16:30:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Acute and chronic respiratory failure with hypoxia",
+        "principal_icd_code": "J9621",
+        "principal_icd_version": 10,
+        "age_at_admission": 58,
+        "length_of_stay_days": 3,
+        "discharge_location": "Chronic or long-term acute care facility",
+        "discharge_location_code": "CHRONIC/LONG TERM ACUTE CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 11,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicaid",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10016742-4cc4d206",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2178-07-25 16:30:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10016742-d1210c46",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2178-07-25 16:30:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10016810,
+      "gender": "F",
+      "anchor_age": 66,
+      "anchor_year": 2185,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "Unknown"
+    },
+    "admissions": [
+      {
+        "hadm_id": 20973395,
+        "admittime": "2185-06-16 01:31:00",
+        "dischtime": "2185-06-21 15:55:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Acute appendicitis with generalized peritonitis",
+        "principal_icd_code": "5400",
+        "principal_icd_version": 9,
+        "age_at_admission": 66,
+        "length_of_stay_days": 5,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 10,
+        "had_icu_stay": true,
+        "service": "General Surgery",
+        "service_code": "SURG",
+        "insurance": "Other",
+        "race": "UNKNOWN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10016810-881af88f",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2185-06-21 15:55:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10016810-2ccc7f63",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2185-06-21 15:55:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10018328,
+      "gender": "F",
+      "anchor_age": 83,
+      "anchor_year": 2154,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 26706939,
+        "admittime": "2154-02-05 21:58:00",
+        "dischtime": "2154-02-09 15:15:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Syncope and collapse",
+        "principal_icd_code": "R55",
+        "principal_icd_version": 10,
+        "age_at_admission": 83,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 12,
+        "had_icu_stay": false,
+        "service": "General Surgery",
+        "service_code": "SURG",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10018328-d03ff5c9",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2154-02-09 15:15:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10018328-8218a792",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2154-02-09 15:15:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 23786647,
+        "admittime": "2154-04-24 03:15:00",
+        "dischtime": "2154-05-03 14:00:00",
+        "admission_type": "Surgical same-day admission",
+        "admission_type_code": "SURGICAL SAME DAY ADMISSION",
+        "diagnosis": "Cerebral aneurysm, nonruptured",
+        "principal_icd_code": "I671",
+        "principal_icd_version": 10,
+        "age_at_admission": 83,
+        "length_of_stay_days": 9,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 16,
+        "had_icu_stay": true,
+        "service": "Neurosurgery",
+        "service_code": "NSURG",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10018328-11165625",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2154-05-03 14:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10018328-d2ffba4d",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2154-05-03 14:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10018501,
+      "gender": "M",
+      "anchor_age": 83,
+      "anchor_year": 2141,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 28479513,
+        "admittime": "2141-07-30 22:34:00",
+        "dischtime": "2141-08-05 18:06:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Subdural hemorrhage following injury without mention of open intracranial wound, with no loss of consciousness",
+        "principal_icd_code": "85221",
+        "principal_icd_version": 9,
+        "age_at_admission": 83,
+        "length_of_stay_days": 6,
+        "discharge_location": "Skilled nursing facility",
+        "discharge_location_code": "SKILLED NURSING FACILITY",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 10,
+        "had_icu_stay": true,
+        "service": "Neurosurgery",
+        "service_code": "NSURG",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10018501-e566d0c9",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2141-08-05 18:06:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10018501-627e4957",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2141-08-05 18:06:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10020640,
+      "gender": "F",
+      "anchor_age": 91,
+      "anchor_year": 2153,
+      "anchor_year_group": "2011 - 2013",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 27984218,
+        "admittime": "2153-02-13 00:22:00",
+        "dischtime": "2153-02-20 13:52:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Pneumonia, organism unspecified",
+        "principal_icd_code": "486",
+        "principal_icd_version": 9,
+        "age_at_admission": 91,
+        "length_of_stay_days": 7,
+        "discharge_location": "Skilled nursing facility",
+        "discharge_location_code": "SKILLED NURSING FACILITY",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 21,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10020640-42a98426",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2153-02-20 13:52:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10020640-c2213e2c",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2153-02-20 13:52:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10022041,
+      "gender": "M",
+      "anchor_age": 64,
+      "anchor_year": 2187,
+      "anchor_year_group": "2011 - 2013",
+      "race_group": "Other"
+    },
+    "admissions": [
+      {
+        "hadm_id": 28909879,
+        "admittime": "2187-05-18 17:08:00",
+        "dischtime": "2187-05-23 17:20:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Alcohol withdrawal",
+        "principal_icd_code": "29181",
+        "principal_icd_version": 9,
+        "age_at_admission": 64,
+        "length_of_stay_days": 5,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 9,
+        "had_icu_stay": true,
+        "service": "Neurology",
+        "service_code": "NMED",
+        "insurance": "Medicare",
+        "race": "OTHER",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10022041-7165b28a",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2187-05-23 17:20:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10022041-9fc8bf74",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2187-05-23 17:20:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10023117,
+      "gender": "M",
+      "anchor_age": 53,
+      "anchor_year": 2170,
+      "anchor_year_group": "2011 - 2013",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 29839885,
+        "admittime": "2170-10-08 07:15:00",
+        "dischtime": "2170-10-09 16:30:00",
+        "admission_type": "Surgical same-day admission",
+        "admission_type_code": "SURGICAL SAME DAY ADMISSION",
+        "diagnosis": "Mechanical complication of automatic implantable cardiac defibrillator",
+        "principal_icd_code": "99604",
+        "principal_icd_version": 9,
+        "age_at_admission": 53,
+        "length_of_stay_days": 1,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 7,
+        "had_icu_stay": false,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023117-feab418b",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2170-10-09 16:30:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023117-55aa839b",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2170-10-09 16:30:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 28872262,
+        "admittime": "2171-11-07 21:37:00",
+        "dischtime": "2171-11-22 15:30:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Acute on chronic systolic heart failure",
+        "principal_icd_code": "42823",
+        "principal_icd_version": 9,
+        "age_at_admission": 54,
+        "length_of_stay_days": 15,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 25,
+        "had_icu_stay": true,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023117-237d2341",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2171-11-22 15:30:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023117-f605efe3",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2171-11-22 15:30:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 29858644,
+        "admittime": "2173-04-16 22:15:00",
+        "dischtime": "2173-04-20 16:40:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Acute on chronic systolic heart failure",
+        "principal_icd_code": "42823",
+        "principal_icd_version": 9,
+        "age_at_admission": 56,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 11,
+        "had_icu_stay": false,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023117-e4aeaefe",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2173-04-20 16:40:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023117-dc5c2900",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2173-04-20 16:40:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 24244087,
+        "admittime": "2174-06-07 23:25:00",
+        "dischtime": "2174-06-12 15:55:00",
+        "admission_type": "Urgent",
+        "admission_type_code": "URGENT",
+        "diagnosis": "Acute kidney failure, unspecified",
+        "principal_icd_code": "5849",
+        "principal_icd_version": 9,
+        "age_at_admission": 57,
+        "length_of_stay_days": 5,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 27,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023117-7f8801f5",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2174-06-12 15:55:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023117-2e66dc8a",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2174-06-12 15:55:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 28887654,
+        "admittime": "2174-12-16 13:25:00",
+        "dischtime": "2174-12-20 10:27:00",
+        "admission_type": "Direct emergency",
+        "admission_type_code": "DIRECT EMER.",
+        "diagnosis": "Acute on chronic systolic (congestive) heart failure",
+        "principal_icd_code": "I5023",
+        "principal_icd_version": 10,
+        "age_at_admission": 57,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 18,
+        "had_icu_stay": false,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023117-4787b47f",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2174-12-20 10:27:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023117-121c4ec2",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2174-12-20 10:27:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 21133938,
+        "admittime": "2175-03-20 23:29:00",
+        "dischtime": "2175-03-29 16:00:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Cardiogenic shock",
+        "principal_icd_code": "R570",
+        "principal_icd_version": 10,
+        "age_at_admission": 58,
+        "length_of_stay_days": 9,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 30,
+        "had_icu_stay": true,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023117-1a334515",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2175-03-29 16:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023117-d00aaf58",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2175-03-29 16:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 21607814,
+        "admittime": "2175-07-06 15:57:00",
+        "dischtime": "2175-07-20 00:00:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Acute on chronic systolic (congestive) heart failure",
+        "principal_icd_code": "I5023",
+        "principal_icd_version": 10,
+        "age_at_admission": 58,
+        "length_of_stay_days": 14,
+        "discharge_location": null,
+        "discharge_location_code": "DIED",
+        "hospital_expire_flag": true,
+        "num_diagnoses": 27,
+        "had_icu_stay": true,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023117-f146b153",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2175-07-20 00:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023117-db7449ab",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2175-07-20 00:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10023239,
+      "gender": "F",
+      "anchor_age": 29,
+      "anchor_year": 2137,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 29295881,
+        "admittime": "2137-06-19 17:35:00",
+        "dischtime": "2137-06-22 14:57:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Mechanical complication due to insulin pump",
+        "principal_icd_code": "99657",
+        "principal_icd_version": 9,
+        "age_at_admission": 29,
+        "length_of_stay_days": 3,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 12,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023239-2f4daf47",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2137-06-22 14:57:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023239-17bb9017",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2137-06-22 14:57:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 21759936,
+        "admittime": "2140-10-03 09:06:00",
+        "dischtime": "2140-10-08 15:28:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Other mechanical complication of insulin pump, initial encounter",
+        "principal_icd_code": "T85694A",
+        "principal_icd_version": 10,
+        "age_at_admission": 32,
+        "length_of_stay_days": 5,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 15,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023239-50ed1f95",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2140-10-08 15:28:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023239-c6a5981e",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2140-10-08 15:28:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 28984460,
+        "admittime": "2140-10-22 22:04:00",
+        "dischtime": "2140-10-23 17:01:00",
+        "admission_type": "Emergency unit observation",
+        "admission_type_code": "EU OBSERVATION",
+        "diagnosis": "Acute kidney failure, unspecified",
+        "principal_icd_code": "N179",
+        "principal_icd_version": 10,
+        "age_at_admission": 32,
+        "length_of_stay_days": 1,
+        "discharge_location": null,
+        "discharge_location_code": null,
+        "hospital_expire_flag": false,
+        "num_diagnoses": 8,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10023239-8c465a0a",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2140-10-23 17:01:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10023239-a8073f83",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2140-10-23 17:01:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10029484,
+      "gender": "M",
+      "anchor_age": 64,
+      "anchor_year": 2160,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "White"
+    },
+    "admissions": [
+      {
+        "hadm_id": 20764029,
+        "admittime": "2160-11-08 04:16:00",
+        "dischtime": "2160-11-11 11:40:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Intestinal infection due to other organism, not elsewhere classified",
+        "principal_icd_code": "0088",
+        "principal_icd_version": 9,
+        "age_at_admission": 64,
+        "length_of_stay_days": 3,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 10,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "WHITE",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10029484-ef3e4759",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2160-11-11 11:40:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10029484-78d5ea99",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2160-11-11 11:40:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10037861,
+      "gender": "M",
+      "anchor_age": 77,
+      "anchor_year": 2115,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "Unknown"
+    },
+    "admissions": [
+      {
+        "hadm_id": 24256866,
+        "admittime": "2115-10-09 20:28:00",
+        "dischtime": "2115-10-18 16:50:00",
+        "admission_type": "Urgent",
+        "admission_type_code": "URGENT",
+        "diagnosis": "Acute on chronic systolic heart failure",
+        "principal_icd_code": "42823",
+        "principal_icd_version": 9,
+        "age_at_admission": 77,
+        "length_of_stay_days": 9,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 25,
+        "had_icu_stay": false,
+        "service": "Cardiac Medicine",
+        "service_code": "CMED",
+        "insurance": "Medicare",
+        "race": "UNKNOWN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037861-31589ed1",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2115-10-18 16:50:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037861-cfec6f17",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2115-10-18 16:50:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 24540843,
+        "admittime": "2117-03-14 16:34:00",
+        "dischtime": "2117-03-24 00:01:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Traumatic subdural hemorrhage with loss of consciousness of any duration with death due to brain injury before regaining consciousness, initial encounter",
+        "principal_icd_code": "S065X7A",
+        "principal_icd_version": 10,
+        "age_at_admission": 79,
+        "length_of_stay_days": 10,
+        "discharge_location": null,
+        "discharge_location_code": "DIED",
+        "hospital_expire_flag": true,
+        "num_diagnoses": 39,
+        "had_icu_stay": true,
+        "service": "Neurosurgery",
+        "service_code": "NSURG",
+        "insurance": "Medicare",
+        "race": "UNKNOWN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037861-890303dc",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2117-03-24 00:01:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037861-e6e9810b",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2117-03-24 00:01:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10037928,
+      "gender": "F",
+      "anchor_age": 78,
+      "anchor_year": 2175,
+      "anchor_year_group": "2011 - 2013",
+      "race_group": "Hispanic or Latino"
+    },
+    "admissions": [
+      {
+        "hadm_id": 28543425,
+        "admittime": "2175-10-26 01:31:00",
+        "dischtime": "2175-10-26 12:48:00",
+        "admission_type": "Emergency unit observation",
+        "admission_type_code": "EU OBSERVATION",
+        "diagnosis": "Closed fracture of dorsal [thoracic] vertebra without mention of spinal cord injury",
+        "principal_icd_code": "8052",
+        "principal_icd_version": 9,
+        "age_at_admission": 78,
+        "length_of_stay_days": 0,
+        "discharge_location": null,
+        "discharge_location_code": null,
+        "hospital_expire_flag": false,
+        "num_diagnoses": 6,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC OR LATINO",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-11dee6e8",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2175-10-26 12:48:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-c1a07aab",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2175-10-26 12:48:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 22490490,
+        "admittime": "2177-07-14 16:55:00",
+        "dischtime": "2177-07-24 13:33:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Diabetes with hyperosmolarity, type II or unspecified type, uncontrolled",
+        "principal_icd_code": "25022",
+        "principal_icd_version": 9,
+        "age_at_admission": 80,
+        "length_of_stay_days": 10,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 17,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-917c4820",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2177-07-24 13:33:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-41eb50c9",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2177-07-24 13:33:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 20192635,
+        "admittime": "2177-09-04 12:05:00",
+        "dischtime": "2177-09-07 16:10:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Poisoning by insulins and antidiabetic agents",
+        "principal_icd_code": "9623",
+        "principal_icd_version": 9,
+        "age_at_admission": 80,
+        "length_of_stay_days": 3,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 18,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-b3f8a202",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2177-09-07 16:10:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-fb94fce7",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2177-09-07 16:10:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 22326517,
+        "admittime": "2177-12-21 20:47:00",
+        "dischtime": "2177-12-23 17:45:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Pneumonia, organism unspecified",
+        "principal_icd_code": "486",
+        "principal_icd_version": 9,
+        "age_at_admission": 80,
+        "length_of_stay_days": 2,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 13,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-aec589ed",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2177-12-23 17:45:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-dfacda1b",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2177-12-23 17:45:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 24225421,
+        "admittime": "2178-09-28 23:05:00",
+        "dischtime": "2178-10-02 17:13:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Infective otitis externa, unspecified",
+        "principal_icd_code": "38010",
+        "principal_icd_version": 9,
+        "age_at_admission": 81,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 17,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-fd3261a3",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2178-10-02 17:13:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-d76d53d3",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2178-10-02 17:13:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 24656677,
+        "admittime": "2178-12-21 05:30:00",
+        "dischtime": "2178-12-26 18:35:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Diabetes with ketoacidosis, type II or unspecified type, uncontrolled",
+        "principal_icd_code": "25012",
+        "principal_icd_version": 9,
+        "age_at_admission": 81,
+        "length_of_stay_days": 5,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 19,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-ac174ae2",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2178-12-26 18:35:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-52870a8a",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2178-12-26 18:35:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 23721604,
+        "admittime": "2179-03-27 18:27:00",
+        "dischtime": "2179-04-04 19:40:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Intestinal infection due to Clostridium difficile",
+        "principal_icd_code": "00845",
+        "principal_icd_version": 9,
+        "age_at_admission": 82,
+        "length_of_stay_days": 8,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 22,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-f45f15d3",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2179-04-04 19:40:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-1c3d88e4",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2179-04-04 19:40:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 29802992,
+        "admittime": "2179-07-25 00:06:00",
+        "dischtime": "2179-07-28 15:54:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Acute kidney failure, unspecified",
+        "principal_icd_code": "5849",
+        "principal_icd_version": 9,
+        "age_at_admission": 82,
+        "length_of_stay_days": 3,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 26,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-5a34c8dd",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2179-07-28 15:54:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-e2c3e739",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2179-07-28 15:54:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 24885579,
+        "admittime": "2182-04-29 04:29:00",
+        "dischtime": "2182-05-03 17:20:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Unspecified acute appendicitis",
+        "principal_icd_code": "K3580",
+        "principal_icd_version": 10,
+        "age_at_admission": 85,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 16,
+        "had_icu_stay": false,
+        "service": "General Surgery",
+        "service_code": "SURG",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-4705f8d2",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2182-05-03 17:20:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-a5034f5b",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2182-05-03 17:20:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 22228639,
+        "admittime": "2183-08-04 04:04:00",
+        "dischtime": "2183-08-04 16:07:00",
+        "admission_type": "Emergency unit observation",
+        "admission_type_code": "EU OBSERVATION",
+        "diagnosis": "Fracture of one rib, left side, initial encounter for closed fracture",
+        "principal_icd_code": "S2232XA",
+        "principal_icd_version": 10,
+        "age_at_admission": 86,
+        "length_of_stay_days": 0,
+        "discharge_location": null,
+        "discharge_location_code": null,
+        "hospital_expire_flag": false,
+        "num_diagnoses": 15,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Medicare",
+        "race": "HISPANIC/LATINO - CUBAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10037928-d47f70bc",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2183-08-04 16:07:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10037928-a2da7196",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2183-08-04 16:07:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "patient_info": {
+      "subject_id": 10039708,
+      "gender": "F",
+      "anchor_age": 46,
+      "anchor_year": 2138,
+      "anchor_year_group": "2014 - 2016",
+      "race_group": "Black"
+    },
+    "admissions": [
+      {
+        "hadm_id": 20572787,
+        "admittime": "2138-10-30 23:30:00",
+        "dischtime": "2138-11-06 23:30:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Other and unspecified manifestations of thiamine deficiency",
+        "principal_icd_code": "2651",
+        "principal_icd_version": 9,
+        "age_at_admission": 46,
+        "length_of_stay_days": 7,
+        "discharge_location": "Left against medical advice",
+        "discharge_location_code": "AGAINST ADVICE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 11,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-f548b40e",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2138-11-06 23:30:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-9850aacc",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2138-11-06 23:30:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 28258130,
+        "admittime": "2140-01-23 16:19:00",
+        "dischtime": "2140-02-26 18:15:00",
+        "admission_type": "Emergency",
+        "admission_type_code": "EW EMER.",
+        "diagnosis": "Anemia, unspecified",
+        "principal_icd_code": "D649",
+        "principal_icd_version": 10,
+        "age_at_admission": 48,
+        "length_of_stay_days": 34,
+        "discharge_location": "Chronic or long-term acute care facility",
+        "discharge_location_code": "CHRONIC/LONG TERM ACUTE CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 38,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-e89ced55",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2140-02-26 18:15:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-dbd70e7e",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2140-02-26 18:15:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 23819016,
+        "admittime": "2140-06-18 00:22:00",
+        "dischtime": "2140-06-22 17:40:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Other specified sepsis",
+        "principal_icd_code": "A4189",
+        "principal_icd_version": 10,
+        "age_at_admission": 48,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 21,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-4c50c2ae",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2140-06-22 17:40:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-e52cdfc5",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2140-06-22 17:40:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 26793610,
+        "admittime": "2140-09-25 04:17:00",
+        "dischtime": "2140-09-26 17:40:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Acute kidney failure, unspecified",
+        "principal_icd_code": "N179",
+        "principal_icd_version": 10,
+        "age_at_admission": 48,
+        "length_of_stay_days": 1,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 10,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-ce230bfe",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2140-09-26 17:40:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-0a6512ac",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2140-09-26 17:40:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 25864431,
+        "admittime": "2142-03-26 06:08:00",
+        "dischtime": "2142-04-11 21:00:00",
+        "admission_type": "Urgent",
+        "admission_type_code": "URGENT",
+        "diagnosis": "Hepatic failure, unspecified without coma",
+        "principal_icd_code": "K7290",
+        "principal_icd_version": 10,
+        "age_at_admission": 50,
+        "length_of_stay_days": 16,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 26,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-2cd75538",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2142-04-11 21:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-c6bf75ec",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2142-04-11 21:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 22999601,
+        "admittime": "2142-05-15 17:14:00",
+        "dischtime": "2142-05-15 18:21:00",
+        "admission_type": "Direct observation",
+        "admission_type_code": "DIRECT OBSERVATION",
+        "diagnosis": "Displacement of vascular dialysis catheter, initial encounter",
+        "principal_icd_code": "T8242XA",
+        "principal_icd_version": 10,
+        "age_at_admission": 50,
+        "length_of_stay_days": 0,
+        "discharge_location": null,
+        "discharge_location_code": null,
+        "hospital_expire_flag": false,
+        "num_diagnoses": 8,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-e90f78cd",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2142-05-15 18:21:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-e4c25fbe",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2142-05-15 18:21:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 27504040,
+        "admittime": "2142-07-06 09:08:00",
+        "dischtime": "2142-07-07 16:40:00",
+        "admission_type": "Emergency unit observation",
+        "admission_type_code": "EU OBSERVATION",
+        "diagnosis": "Hypertensive chronic kidney disease with stage 5 chronic kidney disease or end stage renal disease",
+        "principal_icd_code": "I120",
+        "principal_icd_version": 10,
+        "age_at_admission": 50,
+        "length_of_stay_days": 1,
+        "discharge_location": null,
+        "discharge_location_code": null,
+        "hospital_expire_flag": false,
+        "num_diagnoses": 14,
+        "had_icu_stay": false,
+        "service": "General Surgery",
+        "service_code": "SURG",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-4a5f6a7a",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2142-07-07 16:40:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-82a28dc5",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2142-07-07 16:40:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 24928679,
+        "admittime": "2143-09-19 18:36:00",
+        "dischtime": "2143-09-22 23:00:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Alcoholic cirrhosis of liver with ascites",
+        "principal_icd_code": "K7031",
+        "principal_icd_version": 10,
+        "age_at_admission": 51,
+        "length_of_stay_days": 3,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 25,
+        "had_icu_stay": true,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-dc91541d",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2143-09-22 23:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-4589b0d4",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2143-09-22 23:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 20093566,
+        "admittime": "2143-09-26 18:24:00",
+        "dischtime": "2143-09-30 20:00:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Alcoholic hepatic failure without coma",
+        "principal_icd_code": "K7040",
+        "principal_icd_version": 10,
+        "age_at_admission": 51,
+        "length_of_stay_days": 4,
+        "discharge_location": "Home with home health care",
+        "discharge_location_code": "HOME HEALTH CARE",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 32,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-2f186de6",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2143-09-30 20:00:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-18f1ed64",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2143-09-30 20:00:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      },
+      {
+        "hadm_id": 29488258,
+        "admittime": "2144-01-19 12:07:00",
+        "dischtime": "2144-01-21 21:20:00",
+        "admission_type": "Observation",
+        "admission_type_code": "OBSERVATION ADMIT",
+        "diagnosis": "Hepatic failure, unspecified without coma",
+        "principal_icd_code": "K7290",
+        "principal_icd_version": 10,
+        "age_at_admission": 52,
+        "length_of_stay_days": 2,
+        "discharge_location": "Home",
+        "discharge_location_code": "HOME",
+        "hospital_expire_flag": false,
+        "num_diagnoses": 13,
+        "had_icu_stay": false,
+        "service": "General Medicine",
+        "service_code": "MED",
+        "insurance": "Other",
+        "race": "BLACK/AFRICAN AMERICAN",
+        "note_categories": {
+          "Discharge summary": 1,
+          "Radiology": 1
+        },
+        "notes": [
+          {
+            "note_id": "10039708-7ddae8a7",
+            "category": "Discharge summary",
+            "note_type": "DS",
+            "note_type_label": "Discharge summary",
+            "note_seq": 1,
+            "charttime": "2144-01-21 21:20:00",
+            "text": "Chief Complaint:\nPatient presents with acute symptoms requiring evaluation.\n\nHistory of Present Illness:\nThe patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events. The patient remained stable overnight without acute events.  Patient reports feeling progressively worse over the last 48 hours.\n\nPast Medical History:\n1. Hypertension\n2. Type 2 Diabetes Mellitus\n\nDischarge Medications:\n1. Metformin 500mg daily\n2. Lisinopril 10mg daily\n\nDischarge Condition:\nStable and ready for discharge.\n\nDischarge Disposition:\nHome",
+            "details": {
+              "Attending Physician": "Dr. Smith"
+            }
+          },
+          {
+            "note_id": "10039708-8ed3531d",
+            "category": "Radiology",
+            "note_type": "AR",
+            "note_type_label": "Radiology report addendum",
+            "note_seq": 1,
+            "charttime": "2144-01-21 21:20:00",
+            "text": "Indication: Evaluate for acute cardiopulmonary process.\nComparison: None available.\nFindings: The lungs are clear bilaterally. No focal consolidation, effusion, or pneumothorax. Heart size is normal.\nImpression: No acute cardiopulmonary abnormalities.",
+            "details": {
+              "Modality": "XR"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

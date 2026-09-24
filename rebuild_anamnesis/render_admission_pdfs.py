@@ -1,4 +1,4 @@
-"""Renders each admission in mimic_stratified_sample.json to an enriched multi-note PDF."""
+"""Renders each admission in mimic_stratified_sample.json to one PDF: an enriched structured header followed by every clinical note of the stay."""
 
 import hashlib
 
@@ -8,31 +8,77 @@ def _new_md5(*args, **kwargs):
     return _old_md5(*args, **kwargs)
 hashlib.md5 = _new_md5
 
-import json
-import re
-import sys
 import html
-from pathlib import Path
+import json
+from collections import Counter
+
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.graphics.shapes import Drawing, Line
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
 
-from shared.mimic_section_parser import parse_sections
-from shared.mimic_common import compute_age, compute_los_days
+from shared.mimic_iv import NOTE_CATEGORY_ORDER, resolve_disposition
+from shared.mimic_section_parser import parse_admission_sections
+from shared.pipeline_paths import PDF_DIR, SAMPLE_JSON, admission_pdf_name
 
-BASE_DIR = Path(__file__).resolve().parent
-JSON_FILE = BASE_DIR / "mimic_stratified_sample.json"
-OUTPUT_DIR = BASE_DIR / "Ammissioni_PDF_stratified_enriched"
+# Detail-table fields worth showing in a note heading (MIMIC-IV-Note radiology_detail uses exam_name).
+NOTE_HEADING_DETAIL_FIELDS = ("exam_name", "Modality", "author")
 
-OUTPUT_DIR.mkdir(exist_ok=True)
+NBSP_GAP = "&nbsp;&nbsp;&nbsp;"
+
+
+def esc(value: object) -> str:
+    return html.escape(str(value))
+
+
+def note_inventory(notes: list[dict]) -> str:
+    counts = Counter(note["category"] for note in notes)
+    return ", ".join(f"{category} ({counts[category]})" for category in NOTE_CATEGORY_ORDER if counts[category])
+
+
+def note_heading(note: dict, index: int, total: int) -> str:
+    parts = [f"<b>Clinical note {index} of {total}: {esc(note['category'])}</b>"]
+    if note.get("note_type_label") and note["note_type_label"] != note["category"]:
+        parts.append(esc(note["note_type_label"]))
+    if note.get("charttime"):
+        parts.append(f"charted {esc(note['charttime'])}")
+    details = note.get("details") or {}
+    for field in NOTE_HEADING_DETAIL_FIELDS:
+        if details.get(field):
+            parts.append(f"{esc(field.replace('_', ' ').capitalize())}: {esc(details[field])}")
+    return " - ".join(parts)
+
+
+def build_header(story: list, styles, info: dict, adm: dict, disposition: str) -> None:
+    age = adm.get("age_at_admission")
+    los_days = adm.get("length_of_stay_days")
+    lines = [
+        f"<b>Patient ID:</b> {esc(info['subject_id'])} {NBSP_GAP} <b>Sex:</b> {esc(info['gender'])} "
+        f"{NBSP_GAP} <b>Age at Admission:</b> {age if age is not None else 'N/A'}",
+        f"<b>Admission ID:</b> {esc(adm['hadm_id'])} {NBSP_GAP} <b>Type:</b> {esc(adm['admission_type'])} "
+        f"{NBSP_GAP} <b>Hospital Service:</b> {esc(adm.get('service') or 'Not recorded')}",
+        f"<b>Admission Date:</b> {esc(adm['admittime'].split(' ')[0])} {NBSP_GAP} <b>Discharge Date:</b> "
+        f"{esc(adm['dischtime'].split(' ')[0])} {NBSP_GAP} <b>Length of Stay:</b> "
+        f"{los_days if los_days is not None else 'N/A'} days",
+        f"<b>Principal Diagnosis:</b> {esc(adm.get('diagnosis') or 'Not recorded')}",
+        f"<b>Discharge Disposition:</b> {esc(disposition)}",
+        f"<b>ICU Stay:</b> {'Yes' if adm.get('had_icu_stay') else 'No'} {NBSP_GAP} "
+        f"<b>In-Hospital Mortality:</b> {'Yes' if adm.get('hospital_expire_flag') else 'No'} {NBSP_GAP} "
+        f"<b>Number of Diagnoses:</b> {adm.get('num_diagnoses', 0)}",
+        f"<b>Clinical Notes Included:</b> {esc(note_inventory(adm['notes']))}",
+    ]
+    for line in lines:
+        story.append(Paragraph(line, styles['Normal']))
+        story.append(Spacer(1, 5))
 
 
 def main():
-    print(f"Loading {JSON_FILE.name}...")
-    with JSON_FILE.open("r", encoding="utf-8") as f:
+    print(f"Loading {SAMPLE_JSON}...")
+    with SAMPLE_JSON.open("r", encoding="utf-8") as f:
         data = json.load(f)
+
+    PDF_DIR.mkdir(parents=True, exist_ok=True)
 
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(
@@ -44,90 +90,38 @@ def main():
 
     for patient in data:
         info = patient["patient_info"]
-        subject_id = info["subject_id"]
-        gender = info["gender"]
-        dob = info["dob"].split(" ")[0]
 
         for adm in patient.get("admissions", []):
-            hadm_id = adm["hadm_id"]
-            adm_type = adm["admission_type"]
-            diagnosis = adm.get("diagnosis", "N/D")
-            adm_time_full = adm["admittime"]
-            disch_time_full = adm["dischtime"]
-            adm_time = adm_time_full.split(" ")[0]
-            disch_time = disch_time_full.split(" ")[0]
-            
-            # MODIFICATO: Legge la nuova chiave multi-nota
-            raw_text = adm.get("clinical_notes", adm.get("discharge_summary", ""))
+            notes = adm["notes"]
+            disposition = resolve_disposition(adm, parse_admission_sections(notes))
 
-            service = adm.get("service") or "Not recorded"
-            icu_stay = "Yes" if adm.get("had_icu_stay") else "No"
-            expired = "Yes" if adm.get("hospital_expire_flag") else "No"
-            num_diagnoses = adm.get("num_diagnoses", 0)
-
-            sections = parse_sections(raw_text)
-            disposition = sections.get("Discharge Disposition", "").strip() or "Not stated in note"
-
-            age = compute_age(dob, adm_time_full)
-            los_days = compute_los_days(adm_time_full, disch_time_full)
-
-            filename = OUTPUT_DIR / f"Patient_{subject_id}_Admission_{hadm_id}.pdf"
+            filename = PDF_DIR / admission_pdf_name(info["subject_id"], adm["hadm_id"])
             doc = SimpleDocTemplate(str(filename), pagesize=A4, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
 
-            Story = []
+            story = []
+            story.append(Paragraph("Clinical Record Summary", styles['Title']))
+            story.append(Spacer(1, 15))
+            build_header(story, styles, info, adm, disposition)
 
-            Story.append(Paragraph("Clinical Record Summary", styles['Title']))
-            Story.append(Spacer(1, 15))
+            story.append(Spacer(1, 5))
+            rule = Drawing(515, 1)
+            rule.add(Line(0, 0, 515, 0, strokeWidth=1, strokeColorName='black'))
+            story.append(rule)
+            story.append(Spacer(1, 15))
 
-            Story.append(Paragraph(
-                f"<b>Patient ID:</b> {subject_id} &nbsp;&nbsp;&nbsp; <b>Sex:</b> {gender} "
-                f"&nbsp;&nbsp;&nbsp; <b>Date of Birth:</b> {dob} &nbsp;&nbsp;&nbsp; "
-                f"<b>Age at Admission:</b> {age if age is not None else 'N/A'}", styles['Normal']
-            ))
-            Story.append(Spacer(1, 5))
-            Story.append(Paragraph(
-                f"<b>Admission ID:</b> {hadm_id} &nbsp;&nbsp;&nbsp; <b>Type:</b> {adm_type} "
-                f"&nbsp;&nbsp;&nbsp; <b>Hospital Service:</b> {html.escape(str(service))}", styles['Normal']
-            ))
-            Story.append(Spacer(1, 5))
-            Story.append(Paragraph(
-                f"<b>Admission Date:</b> {adm_time} &nbsp;&nbsp;&nbsp; <b>Discharge Date:</b> "
-                f"{disch_time} &nbsp;&nbsp;&nbsp; <b>Length of Stay:</b> "
-                f"{los_days if los_days is not None else 'N/A'} days", styles['Normal']
-            ))
-            Story.append(Spacer(1, 5))
-            Story.append(Paragraph(f"<b>Principal Diagnosis:</b> {html.escape(str(diagnosis))}", styles['Normal']))
-            Story.append(Spacer(1, 5))
-            Story.append(Paragraph(f"<b>Discharge Disposition:</b> {html.escape(disposition)}", styles['Normal']))
-            Story.append(Spacer(1, 5))
-            Story.append(Paragraph(
-                f"<b>ICU Stay:</b> {icu_stay} &nbsp;&nbsp;&nbsp; "
-                f"<b>In-Hospital Mortality:</b> {expired} &nbsp;&nbsp;&nbsp; "
-                f"<b>Number of Diagnoses:</b> {num_diagnoses}", styles['Normal']
-            ))
+            for index, note in enumerate(notes, 1):
+                story.append(Paragraph(note_heading(note, index, len(notes)), styles['Normal']))
+                story.append(Spacer(1, 5))
+                safe_text = esc(note["text"].strip()).replace('\n', '<br/>')
+                story.append(Paragraph(safe_text, styles['MedicalText']))
+                story.append(Spacer(1, 15))
 
-            Story.append(Spacer(1, 10))
-            d = Drawing(515, 1)
-            d.add(Line(0, 0, 515, 0, strokeWidth=1, strokeColorName='black'))
-            Story.append(d)
-            Story.append(Spacer(1, 15))
-
-            # MODIFICATO: Usa il separatore corretto delle note multiple
-            summaries = raw_text.split("--- NEXT NOTE ---")
-            for sub_idx, summary_text in enumerate(summaries, 1):
-                if len(summaries) > 1:
-                    Story.append(Paragraph(f"<i>Clinical note {sub_idx} of {len(summaries)}</i>", styles['Normal']))
-                    Story.append(Spacer(1, 5))
-                safe_text = html.escape(summary_text.strip()).replace('\n', '<br/>')
-                Story.append(Paragraph(safe_text, styles['MedicalText']))
-                Story.append(Spacer(1, 15))
-
-            doc.build(Story)
+            doc.build(story)
             pdf_count += 1
             if pdf_count % 20 == 0:
                 print(f"  ... {pdf_count} PDFs generated")
 
-    print(f"Created {pdf_count} PDFs in '{OUTPUT_DIR}'.")
+    print(f"Created {pdf_count} PDFs in '{PDF_DIR}'.")
 
 
 if __name__ == "__main__":

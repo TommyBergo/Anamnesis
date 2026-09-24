@@ -1,17 +1,52 @@
-# `rebuild_anamnesis/` — corpus & QA-dataset reproducibility scripts
+# `rebuild_anamnesis/` — corpus & QA-dataset reproducibility scripts (MIMIC-IV)
 
-This folder holds the verified scripts that built the Anamnesis paper's clinical-record corpus
-(138 admission PDFs) and its rule-based QA benchmarks, based on a historical, read-only research
-repo containing the original MIMIC-III extraction/rendering work (last checked 2026-09-16 - nothing
-there was changed).
-The five scripts below are working copies, adapted to run standalone from this flat folder (see
-"What changed from the originals" at the bottom); `shared/` holds the small helper modules they
-import.
+This folder holds the scripts that build the Anamnesis clinical-record corpus (one PDF per hospital
+admission, grouped per patient) and its rule-based QA benchmarks. Since the 2026-09-24 refactoring
+the pipeline reads **MIMIC-IV** (the `hosp`, `icu`, and `note` modules) from the project's `data/`
+folder. It renders **several clinical note types** per admission and emits **first-person**
+questions only. The original MIMIC-III pipeline that produced the paper's 138-admission corpus is
+described under "Historical provenance" below. The "Changelog" at the bottom lists every change
+made during the transition.
 
-`depression_rag\modello\patients_clinical_records\` and `rag_benchmark\QA\` contain many more `.py`
-files than what's reproduced here - draft/superseded generators, an abandoned experiment, and an
-unrelated multidoc-QA candidate-mining pipeline. Every one of them was read (not just named) before
-being ruled out; see "Rejected candidates" below for exactly which ones and why.
+## Requirements
+
+- Python 3.10+
+- `pandas` (step 1), `reportlab` (step 2), `pypdf` (steps 3-4)
+
+## Input data
+
+By default every script reads from:
+
+```text
+<project root>/data/mimic-iv-clinical-database-demo-2.2/
+├── hosp/   patients, admissions, diagnoses_icd, d_icd_diagnoses, services  (.csv.gz)
+├── icu/    icustays                                                        (.csv.gz)
+└── note/   discharge, discharge_detail, radiology, radiology_detail         (.csv.gz)
+            + optional: nursing, physician, consult (and their *_detail tables)
+```
+
+- The local `data/` folder holds the public MIMIC-IV **demo** (100 patients, 275 admissions). Its
+  `note/` tables are **synthetic**: they were generated with `data/.../generate_mock_notes.py` to
+  match the exact MIMIC-IV-Note schema (`note_id, subject_id, hadm_id, note_type, note_seq,
+  charttime, storetime, text`, plus `note_id, field_name, field_value` detail tables).
+- **MIMIC-IV-Note only releases `discharge` and `radiology` tables.** Nursing, physician, and
+  consult notes exist only in MIMIC-III's `NOTEEVENTS`. The pipeline therefore treats `nursing`,
+  `physician`, and `consult` as **optional** tables. They are ingested automatically when present
+  in the same schema, and skipped with a log line when absent. Only `discharge` is mandatory.
+- Tables are looked up in `<data-dir>/<module>/` first, then in `<data-dir>/` (flat layout), as
+  `.csv.gz` or `.csv`.
+- With the real, credentialed MIMIC-IV the note module is a separate PhysioNet release. Point
+  `--note-dir` at it (step 1).
+
+### Path configuration
+
+All paths live in `shared/pipeline_paths.py`:
+
+| Setting | Default | Override |
+|---|---|---|
+| MIMIC-IV root | `<project root>/data/mimic-iv-clinical-database-demo-2.2` | `ANAMNESIS_DATA_DIR` env var, or `--data-dir` (step 1) |
+| MIMIC-IV-Note folder | `<data-dir>/note` | `--note-dir` (step 1) |
+| Output ("work") directory | this folder (`rebuild_anamnesis/`) | `ANAMNESIS_WORK_DIR` env var |
 
 ## Layout
 
@@ -21,122 +56,510 @@ rebuild_anamnesis/
 ├── render_admission_pdfs.py         step 2
 ├── generate_qa_single.py            step 3
 ├── generate_qa_multidoc.py          step 4
-├── split_qa_multidoc_by_patient.py  step 5 (new - see below)
+├── split_qa_multidoc_by_patient.py  step 5
 └── shared/
-    ├── mimic_common.py              date/age helpers (steps 1, 2, 3)
-    ├── mimic_section_parser.py      discharge-summary section splitter (steps 2, 3)
+    ├── pipeline_paths.py            input/output locations for every step
+    ├── mimic_iv.py                  MIMIC-IV table lookup, note-source registry, code-to-label maps
+    ├── mimic_common.py              age-at-admission (anchor_age/anchor_year) and length-of-stay helpers
+    ├── mimic_section_parser.py      per-note-category section splitter (discharge, radiology, nursing, physician, consult)
     ├── pdf_paging.py                per-page PDF text + offset tracking (steps 3, 4)
     └── kotlin_mirror.py             Python port of the app's chunking logic (used by pdf_paging.py)
 ```
 
 ## Pipeline order
 
-Run in this order. Each step's output is the next step's input; `mimic_stratified_sample.json` and
-the raw MIMIC-III CSVs are not included here (see "What is *not* included" below) - place your own
-copy of `mimic_stratified_sample.json` directly in this folder before running steps 2-5.
+Run from inside `rebuild_anamnesis/` (the scripts import `shared.*`), in this order:
 
-1. **`extract_stratified_sample.py`** - raw MIMIC-III CSVs -> `mimic_stratified_sample.json`
-   (100 patients / 138 admissions) + `mimic_stratified_sample_report.md`.
-2. **`render_admission_pdfs.py`** - `mimic_stratified_sample.json` -> 138 PDFs in
-   `Ammissioni_PDF_stratified_enriched/`.
-3. **`generate_qa_single.py`** - the JSON + those PDFs -> `single_dataset_rulebased.jsonl`
-   (two rule-based QA pairs per admission).
-4. **`generate_qa_multidoc.py`** - the JSON + those PDFs -> `multidoc_rulebased.jsonl` (three
-   task families combined: same-patient x2, same-patient x3-trajectory, cross-patient).
-5. **`split_qa_multidoc_by_patient.py`** - reads step 4's output, writes
-   `multidoc_dataset_rulebased_main_same_patient.jsonl` (what's actually shipped to the app) and
-   `multidoc_dataset_rulebased_cross_patient.jsonl` (not currently used, produced for completeness).
+```bash
+python extract_stratified_sample.py          # [--n 300] [--seed 42] [--data-dir ...] [--note-dir ...]
+python render_admission_pdfs.py
+python generate_qa_single.py
+python generate_qa_multidoc.py
+python split_qa_multidoc_by_patient.py
+```
+
+| Step | Reads | Writes (in the work directory) |
+|---|---|---|
+| 1 | MIMIC-IV CSVs | `mimic_stratified_sample.json`, `mimic_stratified_sample_report.md` |
+| 2 | the JSON | `Admission_PDFs_stratified_enriched/Patient_{subject_id}_Admission_{hadm_id}.pdf` |
+| 3 | the JSON + PDFs | `single_dataset_rulebased.jsonl` (two QA pairs per admission) |
+| 4 | the JSON + PDFs | `multidoc_rulebased.jsonl` (three task families combined) |
+| 5 | step 4's output | `multidoc_dataset_rulebased_main_same_patient.jsonl` (shipped to the app), `multidoc_dataset_rulebased_cross_patient.jsonl` (auxiliary probe) |
 
 ## Step detail
 
-**`extract_stratified_sample.py`** reads raw MIMIC-III CSVs (`PATIENTS`, `ADMISSIONS`,
-`DIAGNOSES_ICD`, `ICUSTAYS`, `SERVICES`, `NOTEEVENTS` - PhysioNet-credentialed access required) from
-a `--base-dir` argument (defaults to `/gringotts/datasets/MIMIC-III`). Selects 100 patients via
-nested stratification (outer: `has_mental_health_diagnosis`, forced proportional to the true
-population share; inner: gender x age-quintile x note-length-quintile, greedy-balanced), then pulls
-every admission for each selected patient (138 total).
+### 1. `extract_stratified_sample.py`
 
-**`render_admission_pdfs.py`** renders each admission to a one-PDF-per-admission discharge summary
-(reportlab), with an 8-field enriched English header (Age at Admission, Hospital Service, Length of
-Stay, Discharge Disposition - parsed from the note body - plus Mental Health Diagnosis / ICU Stay /
-In-Hospital Mortality / Number of Diagnoses read directly from the JSON), followed by the verbatim
-note text. Output filenames: `Patient_{subject_id}_Admission_{hadm_id}.pdf`.
+- **Phase 1** streams every available note table in 100,000-row chunks. It sums note length per
+  `(subject_id, hadm_id)`, across all note categories. Only notes linked to an admission
+  (`hadm_id` not null) with non-null text count.
+- **Phase 2** joins `admissions` and `patients` to that index and computes age at admission from
+  `anchor_age`/`anchor_year`. It keeps each patient's earliest noted admission as that patient's
+  stratification profile. It then selects `--n` patients (default 300; every eligible patient is
+  kept when the population is smaller, as with the 100-patient demo), with **no diagnosis-based
+  inclusion or exclusion**. Selection is a seeded greedy pass that keeps the sample's marginal
+  shares of **sex, age quintile, race group, and note-length quintile** at or below their
+  population shares, followed by a relaxed pass that fills any remaining slots.
+- **Phase 3** streams the note tables again for the selected patients only, attaches each note's
+  `*_detail` fields, and orders each admission's notes: discharge summary first, then radiology,
+  nursing, physician, and consult, each chronologically by `charttime`, then `note_seq`.
+- Every admission of a selected patient that has at least one note is kept.
+- The balance report compares population and sample marginals for each stratification variable
+  and counts notes per category.
 
-**`generate_qa_single.py`** is a deterministic (non-LLM) QA generator: exactly two question types
-per admission, macro-types balanced as evenly as corpus availability allows, concrete QA pairs
-preferring non-redundant answers and diverse evidence.
+JSON shape (per patient):
 
-**`generate_qa_multidoc.py`** generates three task families: `same_patient_two_admissions` (exactly
-2 admissions, same patient), `same_patient_three_admission_trajectory` (exactly 3 consecutive
-admissions, same patient), and `cross_patient_two_admissions` (2 admissions from 2 different
-patients sharing the same principal diagnosis) - 116 items total (65 + 16 + 35).
+```text
+patient_info: subject_id, gender, anchor_age, anchor_year, anchor_year_group, race_group
+admissions[]: hadm_id, admittime, dischtime,
+              admission_type (readable label), admission_type_code (raw MIMIC-IV value),
+              diagnosis (ICD long title of seq_num 1), principal_icd_code, principal_icd_version,
+              age_at_admission, length_of_stay_days,
+              discharge_location (readable label, null if missing or DIED), discharge_location_code,
+              hospital_expire_flag, num_diagnoses, had_icu_stay,
+              service (readable label), service_code (raw curr_service of the first transfer),
+              insurance, race, note_categories {category: count},
+              notes[]: note_id, category, note_type, note_type_label, note_seq, charttime, text, details{}
+```
 
-**`split_qa_multidoc_by_patient.py` was not part of the original depression_rag pipeline** - no
-script producing the same-patient/cross-patient split existed anywhere there (searched thoroughly:
-by filename pattern, by re-reading `generate_multidoc_rulebased.py` in full for a hidden CLI flag -
-there is none - and by checking git history, which is empty). It must have been a manual/interactive
-step at the time. The filter criterion was reverse-engineered and verified empirically (counting
-every item's `comparison_type`): a clean, lossless partition - all 81 same-patient items in, all 35
-cross-patient items out, nothing dropped or duplicated. This script reproduces exactly that split.
+### 2. `render_admission_pdfs.py`
 
-## Rejected candidates (read, not just named, before ruling out)
+Renders one A4 PDF per admission with reportlab.
+
+- **Structured header**, one field group per line:
+  1. Patient ID, Sex, Age at Admission
+  2. Admission ID, Type, Hospital Service
+  3. Admission Date, Discharge Date, Length of Stay
+  4. Principal Diagnosis
+  5. Discharge Disposition
+  6. ICU Stay, In-Hospital Mortality, Number of Diagnoses
+  7. Clinical Notes Included, e.g. "Discharge summary (1), Radiology (1)"
+- **Discharge Disposition** is resolved by `shared.mimic_iv.resolve_disposition`, in order:
+  1. the structured `discharge_location`
+  2. "Died in hospital" when `hospital_expire_flag` is set
+  3. the discharge summary's "Discharge Disposition:" section
+  4. "Not recorded"
+- **Body:** every note of the stay under a heading such as `Clinical note 2 of 2: Radiology -
+  Radiology report addendum - charted 2196-03-04 14:02:00 - Modality: XR`, followed by the
+  **verbatim** note text (Courier 9 pt). Note text is never rewritten, so gold evidence stays an
+  exact substring of the PDF.
+
+### 3. `generate_qa_single.py`
+
+- Deterministic (non-LLM) generator: exactly two question types per admission.
+- Types are balanced across the corpus by the same min-cost-flow assignment as before. The types
+  are `header_fact`, `header_fact_enriched`, `section_lookup`, `specific_detail` (history of
+  present illness), `negation_check` (allergies), and `multi_admission_distractor`.
+- Each note is parsed with the section schema of its category.
+- Discharge-summary sections keep their original names. Sections from other note types are keyed
+  `"<category>: <section>"`:
+  - Radiology: Impression, Findings
+  - Nursing: Assessment, Plan
+  - Physician: Assessment and Plan
+  - Consult: Impression, Recommendations
+
+  These are available to `section_lookup` alongside the discharge-summary sections.
+- Every gold chunk must still be contained in one Android-equivalent 500/100 chunk of the
+  re-extracted PDF text.
+
+### 4. `generate_qa_multidoc.py`
+
+Three task families:
+
+- `same_patient_two_admissions`: **consecutive** admissions of one patient; at most 4 pairs per
+  patient.
+- `same_patient_three_admission_trajectory`: three consecutive admissions; at most 2 per patient.
+- `cross_patient_two_admissions`: two patients who share a principal diagnosis; at most 1 item per
+  patient pair.
+
+Fields compared: ICU stay, hospital service, principal diagnosis, and number of diagnoses. The
+cross-patient family does not compare principal diagnosis, because the shared diagnosis is its
+anchor. Every header value used as evidence is verified by exact search in the re-extracted PDF
+text.
+
+### 5. `split_qa_multidoc_by_patient.py`
+
+A lossless partition of step 4's output by `comparison_type`: same-patient items vs. cross-patient
+items. It fails loudly on any unrecognized type.
+
+## Question design rules
+
+- **First person, always.** Single-document questions must contain `I`, `me`, `my`, `mine`, or
+  `myself`. Multi-document questions may also use `we`, `us`, or `our`, for the cross-patient
+  caregiver framing.
+  - `add()` in step 3 raises on a non-first-person template.
+  - `validate_items()` (step 3) and `validate_final()` (step 4) reject any such item before
+    anything is written.
+- **Admissions are referenced by date**, never by identifier; for example "my admission beginning
+  on 2196-02-24". Admission and patient identifiers never appear in a question, and step 3 also
+  rejects any 5+ digit number.
+- **Cross-patient items are framed as a caregiver** who keeps a family member's records together
+  with their own, the setting motivated in the paper (§3.3). The first admission is "mine" and
+  the second is "my family member's".
+- **Realism:** questions a patient cannot meaningfully ask about their own stay are not generated.
+  In-hospital mortality is not asked, and a disposition question is skipped when the disposition
+  is "Died in hospital" or "Not recorded".
+- **De-identification:** items whose question or answer contains a MIMIC-III surrogate `[**...**]`
+  or a MIMIC-IV placeholder `___` are rejected. The history-of-present-illness answer neutralizes
+  them into "(removed)"-style placeholders.
+
+## Why multi-document items are capped (design note)
+
+The reference Android evaluation tests (`app/src/androidTest/.../rag/*MultiDoc*EvaluationTest.kt`)
+read the dataset with `readLines()` and evaluate items one at a time against a per-patient index.
+
+- **Memory and storage are not affected by item count.** The index size, and with it peak RSS and
+  ObjectBox storage, depends only on the corpus (PDFs → chunks). 972 items are ~1 MB of JSON.
+- **Evaluation time grows linearly with item count.** Every item costs one retrieval plus one full
+  generation, at ~4.4 tokens/s on the reference device, for each evaluated retriever × generator ×
+  evidence-condition configuration.
+- **Scores need statistical balance.** All-pairs enumeration is quadratic in a patient's number of
+  admissions. In the MIMIC-IV demo one patient with 20 admissions alone produced 190 of 741 pairs,
+  so the multi-document score would largely measure that one record.
+
+Pairs are therefore restricted to consecutive admissions, the same rule the paper already applies
+to trajectories so that the temporal reading stays unambiguous. Each patient contributes a bounded
+number of windows. When a patient has more windows than the cap, `spread_priorities()` prefers
+windows spread evenly over the timeline, e.g. pairs (0,1), (6,7), (12,13), (18,19) of a
+20-admission history. It falls back to the remaining windows only if a preferred one fails
+grounding. The caps are the constants `MAX_PAIRS_PER_PATIENT`, `MAX_TRAJECTORIES_PER_PATIENT`, and
+`MAX_CROSS_ITEMS_PER_PATIENT_PAIR` at the top of `generate_qa_multidoc.py`.
+
+## Reference run on the local demo data (2026-09-24)
+
+| Output | Count |
+|---|---|
+| Patients / admissions / PDFs | 100 / 275 / 275 |
+| Notes rendered | 275 discharge summaries + 275 radiology notes (no nursing/physician/consult tables in `data/`) |
+| Single-document items | 550 (2 per admission): header_fact 110, header_fact_enriched 110, section_lookup 110, specific_detail 110, multi_admission_distractor 110, negation_check 0 |
+| Multi-document, same-patient pairs | 112 (741 before consecutive-pairing + caps) |
+| Multi-document, trajectories | 47 (127 before caps) |
+| Multi-document, cross-patient probe | 90 (104 before the one-item-per-patient-pair cap) |
+| Patients / admissions covered by multi-document items | 68 / 229 |
+| Grounding failures | 0 |
+
+What these numbers reflect about the **synthetic** demo notes, not about the code:
+
+- `negation_check` is 0 because the mock discharge notes have no "Allergies:" section.
+- All gold evidence is on page 1 because the mock notes are short.
+- All radiology answers are identical ("No acute cardiopulmonary abnormalities.") because the mock
+  generator writes the same report for every admission.
+
+The optional nursing, physician, and consult path was exercised separately, with throwaway
+synthetic tables outside the repository. All three categories were ingested, rendered, and turned
+into grounded first-person `section_lookup` items with 0 grounding failures.
+
+## Historical provenance (original MIMIC-III release)
+
+The paper's corpus (100 patients, 138 admissions, discharge summaries only) was built by the
+MIMIC-III predecessors of these scripts. They were copied from a historical, read-only research repo
+(`depression_rag`, last checked 2026-09-16) into this flat folder. That copy flattened the layout,
+fixed imports, produced English filenames directly, and trimmed comments, all verified
+token-for-token logic-preserving.
+
+- `split_qa_multidoc_by_patient.py` did not exist in the original pipeline. It reproduces a manual
+  split whose criterion was reverse-engineered and verified as a clean, lossless partition: 81
+  same-patient items in, 35 cross-patient items out.
+- Evidence that the copied scripts were the ones actually used:
+  - `ENRICHED_CORPUS_METHODOLOGY.md` in `depression_rag` documents the same two-script corpus
+    pipeline by name.
+  - The renderer's timestamp and output bytes match the PDFs the app ships.
+  - `generate_qa_single.py`'s output was byte-identical (923,851 bytes) to the app's shipped
+    `single_dataset_rulebased.jsonl`.
+
+Candidates that were read in full and rejected at the time:
 
 | Script | Why rejected |
 |---|---|
-| `extract_mimic.py` | Earliest draft: plain `random.sample()`, no stratification. Produces the older 118-admission corpus (`mimic_100_discharge_summaries.json`), not the current one. |
-| `json_to_pdf.py` | First PDF renderer - non-stratified source, basic Italian header, only 5 fields. |
-| `json_to_pdf_stratified.py` | Stratified source, but still the old basic/Italian rendering (no enrichment). Writes to `Ammissioni_PDF_stratified/`, not `_enriched`. |
-| `json_to_pdf_enriched.py` | Enrichment added, but sourced from the *old* non-stratified JSON, where `has_mental_health_diagnosis`/`had_icu_stay`/`hospital_expire_flag` are `None` for all 118 admissions (broken CSV joins) - this is exactly why the stratified+enriched script exists. |
-| `json_to_pdf_stratified_enriched_json_only.py` | Near-duplicate of the winning script, same output folder/source JSON, but requires fields (`age_at_admission`, `length_of_stay`, `discharge_disposition`) that don't exist in the real `mimic_stratified_sample.json` - would crash immediately if run. Also the single latest-modified file in the directory, three days after the real corpus was already generated and shipped - a non-functional draft. |
-| `generate_dataset_single_rulebased_v11.py` / `_v12.py` / `_v13.py` | Earlier same-day drafts of `generate_qa_single.py`, superseded by the version with no suffix. |
-| `generate_multidoc_rulebased_v2.py` | Earlier draft of `generate_qa_multidoc.py` (2026-08-28, three days before the final version). |
-| ~15 `dump_*`/`extract_*`/`build_batch*_items.py` files | A separate, older multidoc-QA *candidate-mining* pipeline feeding `new_multidoc_items*.jsonl` - out of scope; not the current rulebased generator. |
+| `extract_mimic.py` | Earliest draft: plain `random.sample()`, no stratification; produced the older 118-admission corpus. |
+| `json_to_pdf.py` | First PDF renderer - non-stratified source, basic Italian header, 5 fields. |
+| `json_to_pdf_stratified.py` | Stratified source but the old basic Italian rendering (no enrichment). |
+| `json_to_pdf_enriched.py` | Enrichment added, but sourced from the old non-stratified JSON with broken CSV joins. |
+| `json_to_pdf_stratified_enriched_json_only.py` | Non-functional draft requiring JSON fields that did not exist. |
+| `generate_dataset_single_rulebased_v11.py` / `_v12.py` / `_v13.py` | Superseded same-day drafts of `generate_qa_single.py`. |
+| `generate_multidoc_rulebased_v2.py` | Earlier draft of `generate_qa_multidoc.py`. |
+| ~15 `dump_*`/`extract_*`/`build_batch*_items.py` files | A separate, older multidoc candidate-mining pipeline; out of scope. |
 
-## Evidence this is the right pipeline, not a guess
-
-- `ENRICHED_CORPUS_METHODOLOGY.md` (in `depression_rag`) independently documents this exact
-  two-script corpus pipeline by name, including why the enriched-JSON-only variant was abandoned.
-- Timestamp/byte correlation: the original `json_to_pdf_stratified_enriched.py` was last edited
-  2026-08-28 10:23:40; all 138 output PDFs cluster 10:34:07-10:34:46 the same day. Spot-checked one
-  PDF: identical file size (6793 bytes) and identical timestamp between the `depression_rag` source
-  and the Android app's shipped copy (pre-rename) - proof the app's corpus is this script's direct,
-  unmodified output.
-- `generate_qa_single.py`'s original output was byte-for-byte identical (923,851 bytes) to the app's
-  shipped `single_dataset_rulebased.jsonl`, before the Paziente/Ricovero rename touched it.
-
-## What changed from the originals
-
-These are working copies, not byte-identical snapshots - three kinds of changes were made, all
-logic-preserving (verified by comparing every non-comment, non-string source token before and after
-each edit - identical in every file):
-
-1. **Flattened layout + fixed imports.** The originals were split across `patients_clinical_records/`
-   and `rag_benchmark/QA/` in `depression_rag`, with `sys.path.insert(...)` calls and a duplicated
-   copy of `mimic_section_parser.py` to bridge the two directories. Here everything is flat, with one
-   `shared/` folder and plain `from shared.x import y` imports - no path hacking, one copy of each
-   helper. Verified by importing every script in isolation (a fresh Python process per file) and
-   confirming every import resolves.
-2. **English filenames produced directly.** The originals wrote `Paziente_{id}_Ricovero_{hadm}.pdf`
-   and read/wrote several dataset files under their pre-shortening names
-   (`synthetic_dataset_single_rulebased.jsonl` instead of `single_dataset_rulebased.jsonl`, and two
-   more `Paziente_`/`Ricovero_` references inside `generate_qa_multidoc.py` that were missed by the
-   rename applied to the live app repo, since this script was still sitting untouched in
-   `depression_rag` at the time). All of these now produce the same English names the Android app
-   actually ships, closing what was previously a documented "rename it yourself" gap.
-3. **Comments trimmed to one sentence per file/class.** Every inline `#` comment and multi-line
-   docstring was stripped; each file now carries exactly one explanatory sentence at the top
-   (module docstring), and each class carries one sentence describing what it represents. Function
-   bodies are unchanged. This was done mechanically (Python's own `tokenize`/`ast` modules identify
-   comment and docstring spans precisely - not a regex pass that could mangle a string literal
-   containing `#`), and verified by diffing every file's non-comment, non-string token stream before
-   and after: identical in all nine files.
+To reproduce the paper's exact MIMIC-III corpus, check out the scripts at commit `1610baf`
+("Repo created"), which predates this refactoring.
 
 ## What is *not* included here
 
-`mimic_stratified_sample.json` and the raw MIMIC-III CSVs are not copied into this folder. The CSVs
-require PhysioNet credentialing and cannot be freely redistributed; the JSON derived from them
-remains at its original location,
-`depression_rag\modello\patients_clinical_records\mimic_stratified_sample.json`, for anyone who
-already has the appropriate access. Running steps 2-5 from scratch requires that file in place
-directly inside this folder (i.e. run step 1 first, or supply your own copy of that exact JSON).
-`pandas` is required for step 1 and is not bundled - install it separately.
+- **Raw data:** no MIMIC tables or derived JSON/PDF/JSONL files are committed. Credentialed data
+  cannot be redistributed under the PhysioNet DUA.
+- **Real MIMIC-IV-Note text:** the local `data/` folder only contains the public demo with
+  synthetic notes. Regenerating the benchmark from real MIMIC-IV requires credentialed access to
+  MIMIC-IV and MIMIC-IV-Note.
+
+---
+
+## Changelog
+
+### 2026-09-24 — MIMIC-III → MIMIC-IV refactoring, multi-note corpus, first-person questions
+
+The baseline for everything below is commit `1610baf`. At that commit the tree already contained
+partial, uncommitted-at-the-time edits toward a multi-category corpus:
+
+- a `TARGET_CATEGORIES` set of MIMIC-III `NOTEEVENTS` category names
+- a `clinical_notes` JSON key joined with `--- NEXT NOTE ---`
+- a default `--n 300`
+- no mental-health stratum in step 1
+- a few Italian inline comments
+
+The README at that commit still described the original MIMIC-III, mental-health-stratified
+pipeline. Changes are grouped by theme, then by file.
+
+#### A. Data source: MIMIC-III → MIMIC-IV, read from the project `data/` folder
+
+1. **New `shared/pipeline_paths.py`.** A single place for every input and output path:
+   - `DEFAULT_DATA_DIR` = `<project root>/data/mimic-iv-clinical-database-demo-2.2`, overridable
+     with the `ANAMNESIS_DATA_DIR` environment variable.
+   - `WORK_DIR` = `rebuild_anamnesis/`, overridable with `ANAMNESIS_WORK_DIR`.
+   - Derived paths: `SAMPLE_JSON`, `SAMPLE_REPORT_MD`, `PDF_DIR`, `SINGLE_QA_PATH`,
+     `MULTIDOC_QA_PATH`, `MULTIDOC_SAME_PATIENT_PATH`, `MULTIDOC_CROSS_PATIENT_PATH`.
+   - `admission_pdf_name()` builds `Patient_{subject_id}_Admission_{hadm_id}.pdf`.
+
+   Before this, each script defined its own `BASE_DIR`-relative paths, and step 1 defaulted to
+   `/gringotts/datasets/MIMIC-III`.
+2. **New `shared/mimic_iv.py`.** MIMIC-IV schema knowledge:
+   - `find_table` / `require_table` / `module_dirs`: `.csv.gz` or `.csv` lookup in
+     `<data-dir>/<module>/`, then in `<data-dir>/`.
+   - `ADMISSION_TYPE_LABELS`: the nine MIMIC-IV admission types become readable labels, e.g.
+     `EW EMER.` → "Emergency", `SURGICAL SAME DAY ADMISSION` → "Surgical same-day admission".
+   - `SERVICE_LABELS`: the 21 `services.curr_service` codes become readable names, e.g. `CMED` →
+     "Cardiac Medicine", `MED` → "General Medicine", `OMED` → "Oncology".
+   - `DISCHARGE_LOCATION_LABELS` and `label_discharge_location()`: sentence-case labels, with
+     overrides such as `HOME HEALTH CARE` → "Home with home health care" and `AGAINST ADVICE` →
+     "Left against medical advice". `DIED` maps to no destination.
+   - `resolve_disposition()`, shared by steps 2 and 3 so the header and the QA evidence always
+     agree.
+   - `race_group()`: collapses MIMIC-IV `race` into White / Black / Hispanic or Latino / Asian /
+     Other / Unknown.
+   - The note-source registry (see C).
+3. **`extract_stratified_sample.py` rewritten for the MIMIC-IV schema.**
+   - Lowercase MIMIC-IV column names throughout (`subject_id`, `hadm_id`, …) instead of MIMIC-III
+     uppercase.
+   - Tables read:
+     - `hosp/patients`: `gender`, `anchor_age`, `anchor_year`, `anchor_year_group`
+     - `hosp/admissions`: `admittime`, `dischtime`, `admission_type`, `discharge_location`,
+       `insurance`, `race`, `hospital_expire_flag`
+     - `hosp/diagnoses_icd` + `hosp/d_icd_diagnoses`
+     - `hosp/services`
+     - `icu/icustays`
+     - note tables from `note/`
+   - **Principal diagnosis:** MIMIC-IV `admissions` has no free-text `DIAGNOSIS` column. The
+     principal diagnosis is now the `long_title` of the `seq_num`-first code in `diagnoses_icd`,
+     joined on (`icd_code`, `icd_version`) so ICD-9 and ICD-10 are both handled.
+     `principal_icd_code` and `principal_icd_version` are stored alongside it.
+   - **Number of diagnoses:** the count of `diagnoses_icd` rows per admission (was
+     `ICD9_CODE`-only).
+   - **Hospital service:** the first `curr_service` by `transfertime`, as before. It is now stored
+     as a readable `service` plus the raw `service_code`.
+   - **Admission type:** stored as a readable label plus the raw `admission_type_code`.
+   - **Discharge disposition:** taken from the structured `admissions.discharge_location`
+     (readable label plus raw code). It was previously parsed from the note body only.
+   - New per-admission fields: `insurance`, `race`, `note_categories`.
+   - New CLI:
+     - `--data-dir` (replaces `--base-dir`; default is the project `data/` folder)
+     - `--note-dir` (for the separately distributed MIMIC-IV-Note module)
+   - `patients` is loaded once and indexed by `subject_id`. Patients and admissions are emitted in
+     deterministic order: by `subject_id`, then by `admittime` and `hadm_id`.
+   - Fixed a pandas `FutureWarning`: `had_icu_stay` is now computed with `.eq(True)` instead of a
+     downcasting `.fillna(False)`.
+   - The output directory is created before writing, so `ANAMNESIS_WORK_DIR` may point to a
+     folder that does not exist yet.
+4. **Age at admission (`shared/mimic_common.py`).** MIMIC-IV has no date of birth.
+   - `compute_age(dob, admittime)` and the MIMIC-III constants `MIMIC_90_PLUS_SENTINEL_AGE=90` /
+     `MIMIC_90_PLUS_RAW_THRESHOLD=150` were replaced.
+   - New: `compute_age_at_admission(anchor_age, anchor_year, admittime)` = `anchor_age +
+     (admission year − anchor_year)`.
+   - Patients top-coded by MIMIC-IV (`anchor_age` ≥ 91) are reported as
+     `MIMIC_IV_TOP_CODED_AGE = 91`.
+   - `compute_los_days` now also returns `None` for negative stays.
+   - Age and length of stay are computed **once in step 1** and stored as `age_at_admission` and
+     `length_of_stay_days`.
+   - The duplicate DOB-based `compute_age` / `compute_los_days` copies inside
+     `generate_qa_single.py` were deleted, together with its `MIMIC_90_*` constants and the unused
+     `datetime`, `sys`, and `Path` imports.
+5. **Date of birth removed from the PDF header** (step 2), since MIMIC-IV does not provide it.
+   `patient_info.dob` no longer exists. It is replaced by `anchor_age`, `anchor_year`,
+   `anchor_year_group`, and `race_group`.
+
+#### B. Mental-health focus removed, broader cohort
+
+6. **No diagnosis-based inclusion, exclusion, or stratification.** There is no mental-health
+   (ICD-9 290–319) stratum, filter, or flag anywhere in the pipeline, and the balance report
+   states this explicitly.
+7. **Mental-health question removed** from `generate_qa_single.py`. The
+   `has_mental_health_diagnosis` → "Was any mental health condition recorded for me…" template,
+   subkey `mental_health`, is gone.
+8. **Broader demographic stratification** (`extract_stratified_sample.py`):
+   - Stratification variables are now `gender`, `age_quintile`, **`race_group`** (new), and
+     `note_length_quintile`.
+   - **Algorithm changed from joint-stratum to marginal balancing:**
+     - The old greedy pass compared a patient's share within the full joint stratum (sex × age ×
+       note length).
+     - With a fourth variable, joint strata become near-empty.
+     - The new `select_patients_stratified()` accepts a patient only if, for every variable
+       independently, the sample's current count of that patient's value divided by (sample size
+       + 1) does not exceed the population share of that value.
+     - A relaxed second pass fills any remaining slots.
+     - The candidate order is `sorted(subject_id)` shuffled with `random.Random(seed)`, so it is
+       deterministic.
+   - Default sample size is `--n 300`. When the eligible population is smaller, all eligible
+     patients are kept and a message is logged (the demo has 100).
+   - The balance report (`mimic_stratified_sample_report.md`) now covers MIMIC-IV, all four
+     marginals, and the note count per category.
+
+#### C. Multiple clinical-note types
+
+9. **Note-source registry** (`shared/mimic_iv.NOTE_SOURCES`). Each entry maps a MIMIC-IV-Note
+   schema table to a category and its detail table:
+
+   | Table | Category | Detail table |
+   |---|---|---|
+   | `discharge` | Discharge summary | `discharge_detail` |
+   | `radiology` | Radiology | `radiology_detail` |
+   | `nursing` | Nursing | `nursing_detail` |
+   | `physician` | Physician | `physician_detail` |
+   | `consult` | Consult | `consult_detail` |
+
+   - `discharge` is required (`REQUIRED_NOTE_TABLES`). The others are optional and are skipped
+     with a log line when absent. MIMIC-IV-Note itself only ships discharge and radiology.
+   - `NOTE_TYPE_LABELS` maps `DS`/`AD`/`RR`/`AR` to "Discharge summary", "Discharge summary
+     addendum", "Radiology report", and "Radiology report addendum".
+   - This replaces the baseline's MIMIC-III `TARGET_CATEGORIES` filter on `NOTEEVENTS.CATEGORY`.
+10. **Structured note storage** (step 1). The baseline's single `clinical_notes` string (notes
+    joined with `--- NEXT NOTE ---` and prefixed `[Category: …]`) is replaced by an ordered
+    `notes[]` list.
+    - Each note has `note_id`, `category`, `note_type`, `note_type_label`, `note_seq`,
+      `charttime`, `text`, and `details`. `details` holds the `field_name → field_value` pairs
+      from the `*_detail` table, with multiple values joined by `; `.
+    - Detail tables are streamed in chunks and filtered to the selected notes.
+    - Order: category (discharge → radiology → nursing → physician → consult), then `charttime`,
+      `note_seq`, `note_id`.
+11. **Category-aware section parser** (`shared/mimic_section_parser.py` rewritten).
+    - A `SectionSchema` dataclass holds aliases, boundary-only headers, and case sensitivity.
+    - Five schemas are provided:
+      - `DISCHARGE_SCHEMA`: the original aliases, unchanged, still case-sensitive.
+      - `RADIOLOGY_SCHEMA`: Examination, Indication, Technique, Comparison, Findings, Impression.
+      - `NURSING_SCHEMA`: Situation, Background, Assessment, Action, Response, Plan.
+      - `PHYSICIAN_SCHEMA`: Chief Complaint, History of Present Illness/HPI, 24 Hour Events,
+        Physical Examination, Labs and Radiology, Assessment and Plan / A/P.
+      - `CONSULT_SCHEMA`: Reason for Consultation, History of Present Illness, Impression,
+        Recommendations.
+    - The four new schemas are case-insensitive.
+    - `parse_sections(text, category="Discharge summary")` keeps the old call signature.
+    - New: `parse_admission_sections(notes)` returns `{category: {section: content}}`. Within a
+      category, the first note carrying a section wins.
+    - Header matching now tolerates leading spaces or tabs and whitespace before the colon.
+    - The legacy `NEXT SUMMARY` pre-split was removed, since it no longer matched any separator.
+12. **PDF rendering of every note** (`render_admission_pdfs.py` rewritten).
+    - The header gains a **"Clinical Notes Included"** line, e.g. "Discharge summary (1),
+      Radiology (1)".
+    - Each note gets its own heading: category, note-type label (omitted when identical to the
+      category), chart time, and the detail fields `exam_name` / `Modality` / `author` when
+      present.
+    - Note text is rendered verbatim. The old split on the `--- NEXT NOTE ---` string and the
+      "*Clinical note i of n*" italic caption are gone.
+    - Header construction moved into `build_header()`, and all dynamic values are HTML-escaped.
+    - **Output folder renamed** from the Italian `Ammissioni_PDF_stratified_enriched/` to
+      `Admission_PDFs_stratified_enriched/`.
+13. **QA generation over the new note types** (`generate_qa_single.py`).
+    - `NOTE_SECTION_LOOKUPS` exposes seven non-discharge sections to `section_lookup`:
+      - Radiology: Impression, Findings
+      - Nursing: Assessment, Plan
+      - Physician: Assessment and Plan
+      - Consult: Impression, Recommendations
+    - Each has a full-section question template and a first-item template (e.g. "What was the
+      overall conclusion of my imaging report during my admission beginning on …?").
+    - All seven were appended to `SECTION_LOOKUP_PRIORITY`.
+    - The six question types and the min-cost-flow balancing are unchanged, so the benchmark
+      taxonomy of the paper is preserved.
+    - The `Service:` fallback now searches discharge-summary notes only.
+    - The disposition question now uses `resolve_disposition()`, i.e. the structured discharge
+      location first.
+
+#### D. First-person perspective
+
+14. **Enforced in `generate_qa_single.py`.**
+    - New `FIRST_PERSON_RE` (`I|me|my|mine|myself`).
+    - `add()` raises `ValueError` on a non-first-person template, and `validate_items()` raises
+      `RuntimeError` on any non-first-person item.
+    - The admission-reference fallback changed from "this admission" to "my admission".
+    - The Chief Complaint template changed from "…when I was admitted on {date or 'this
+      admission'}?" to "…at the start of my admission beginning on {date}?".
+    - The Brief Hospital Course first-item template changed from "How does the hospital course
+      summary begin for …" to "How does the summary of my hospital course begin for …".
+    - The unused `admission_ref_by_discharge` variable was deleted.
+15. **Enforced in `generate_qa_multidoc.py`.**
+    - `FIRST_PERSON_RE` (also `we|us|our`) plus a new patient-ID-leak check, both in
+      `validate_final()`.
+    - Cross-patient questions previously named "Patient {subject_id} … and patient {subject_id}".
+      They are now framed as a caregiver: "I keep my family member's hospital records together
+      with mine. We were both hospitalized with the principal diagnosis "…": my stay began on …
+      and theirs began on …. What was the … for each of us…?"
+    - Cross-patient answers read "My hospitalization beginning … ; my family member's
+      hospitalization beginning …".
+    - Cross-patient summaries read "…was the same for both of us" / "…differed between us" /
+      "My admission had more recorded diagnoses than my family member's".
+    - Same-patient summaries are unchanged ("My recorded … was the same/differed").
+    - Trajectory answers now start with a capital letter ("My hospitalization beginning …").
+    - The ICU field label changed from "ICU-stay status" to "intensive care (ICU) status".
+16. **Unrealistic self-referential questions removed.**
+    - The single-document "Did I experience in-hospital mortality…?" question was deleted.
+    - `mortality` was removed from `PAIR_FIELDS`, `CROSS_FIELDS`, and `FIELD_SPECS` in the
+      multi-document generator.
+    - The disposition question is skipped when the resolved disposition is "Died in hospital" or
+      "Not recorded".
+    - The "In-Hospital Mortality" field **remains in the PDF header** as a document fact.
+17. **MIMIC-IV de-identification handling** (`generate_qa_single.py`).
+    - `DEID_SURROGATE_RE` now matches MIMIC-IV's `___` placeholders as well as MIMIC-III's
+      `[**`.
+    - `_neutralize_deid()` replaces `___` with "(removed)".
+
+#### E. Multi-document pairing choices (`generate_qa_multidoc.py`)
+
+18. **Consecutive pairs only.** `make_same_patient_candidates()` now pairs admission *i* with *i+1*
+    in chronological order, instead of `itertools.combinations(admissions, 2)`.
+19. **Per-patient caps.** New constants:
+    - `MAX_PAIRS_PER_PATIENT = 4`
+    - `MAX_TRAJECTORIES_PER_PATIENT = 2`
+    - `MAX_CROSS_ITEMS_PER_PATIENT_PAIR = 1`
+
+    Supporting code:
+    - `PairCandidate` and `TrajectoryCandidate` gained a `priority` field and a `cap_key`
+      property: the patient, or the sorted patient pair for cross-patient items.
+    - New `spread_priorities()` ranks a patient's windows so that the first `cap` ranks are spread
+      evenly across the timeline.
+    - New `ordered_source_sets()` orders source sets by (priority, seeded `stable_rank`).
+    - `build_pair_items()` takes a `max_items_per_group` argument, and both builders skip a group
+      once its cap is reached.
+    - A preferred window that fails grounding is replaced by the next-ranked window of the same
+      patient.
+    - `validate_final()` asserts every cap.
+    - The run log prints the caps and the pre-cap candidate counts.
+20. **Effect on the demo data:**
+    - same-patient pairs: 741 → 112
+    - trajectories: 127 → 47
+    - cross-patient items: 104 → 90
+    - total: 972 → 249
+
+    All 68 multi-admission patients are still covered, and field balance is exact (28 items per
+    field for pairs). Rationale: see "Why multi-document items are capped" above.
+
+#### F. Other script updates
+
+21. **`split_qa_multidoc_by_patient.py`:** paths now come from `shared.pipeline_paths`; the logic
+    is unchanged.
+22. **`generate_qa_single.py` / `generate_qa_multidoc.py`:** source JSON, PDF folder, and output
+    paths now come from `shared.pipeline_paths`. Hand-built PDF filenames were replaced by
+    `admission_pdf_name()`, and the start-up log prints the work directory instead of the script
+    directory.
+23. **Language:** every identifier, docstring, and comment in `rebuild_anamnesis/` is in American
+    English. The Italian comments present at the baseline ("MODIFICATO: …", "Nota: …",
+    "Categorie di note cliniche incluse…") were removed or rewritten.
+24. **Unchanged files:** `shared/kotlin_mirror.py` (the Android chunking port) and
+    `shared/pdf_paging.py`, so gold-chunk boundaries remain identical to the on-device app.
+25. **Scope:** only files inside `rebuild_anamnesis/` were modified or added. The Android
+    application, `data/`, and all other project files were left untouched.

@@ -1,10 +1,10 @@
-"""Generates rule-based multi-document QA pairs (same-patient and cross-patient admission comparisons) from MIMIC-III."""
+"""Generates rule-based, first-person multi-document QA pairs (same-patient and cross-patient admission comparisons) from the MIMIC-IV corpus."""
 
 from __future__ import annotations
 
 import hashlib
 import json
-import sys
+import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from itertools import combinations
@@ -12,20 +12,34 @@ from pathlib import Path
 from typing import Any
 
 from shared.pdf_paging import extract_paged_document, find_pages_for_text
-
-BASE_DIR = Path(__file__).resolve().parent
-SOURCE_JSON = BASE_DIR / "mimic_stratified_sample.json"
-PDF_DIR = BASE_DIR / "Ammissioni_PDF_stratified_enriched"
-OUTPUT_PATH = BASE_DIR / "multidoc_rulebased.jsonl"
+from shared.pipeline_paths import (
+    MULTIDOC_QA_PATH as OUTPUT_PATH,
+    PDF_DIR,
+    SAMPLE_JSON as SOURCE_JSON,
+    admission_pdf_name,
+)
 
 SEED = 42
+
+# Every question must be asked by the patient (or, for the cross-patient probe, by a caregiver who
+# holds a family member's records alongside their own) in the first person.
+FIRST_PERSON_RE = re.compile(r"\b(?:I|me|my|mine|myself|we|us|our)\b")
+
+# Volume limits. Item count does not change the on-device index (that depends only on the PDFs),
+# but every item costs one retrieval plus one full generation per evaluated configuration, and
+# all-pairs enumeration lets a few long-stay patients dominate the multi-document scores (in the
+# MIMIC-IV demo one patient with 20 admissions alone yielded 190 of 741 pairs). Pairs therefore
+# join consecutive admissions only, and each patient contributes a bounded number of windows,
+# spread evenly over their timeline.
+MAX_PAIRS_PER_PATIENT = 4
+MAX_TRAJECTORIES_PER_PATIENT = 2
+MAX_CROSS_ITEMS_PER_PATIENT_PAIR = 1
 
 PAIR_FIELDS = (
     "icu",
     "service",
     "diagnosis",
     "num_diagnoses",
-    "mortality",
 )
 
 TRAJECTORY_FIELDS = (
@@ -39,13 +53,12 @@ CROSS_FIELDS = (
     "icu",
     "service",
     "num_diagnoses",
-    "mortality",
 )
 
 FIELD_SPECS = {
     "icu": {
         "json_key": "had_icu_stay",
-        "label": "ICU-stay status",
+        "label": "intensive care (ICU) status",
         "pdf_label": "ICU Stay",
         "kind": "bool",
     },
@@ -66,12 +79,6 @@ FIELD_SPECS = {
         "label": "number of recorded diagnoses",
         "pdf_label": "Number of Diagnoses",
         "kind": "number",
-    },
-    "mortality": {
-        "json_key": "hospital_expire_flag",
-        "label": "in-hospital mortality outcome",
-        "pdf_label": "In-Hospital Mortality",
-        "kind": "bool",
     },
 }
 
@@ -105,10 +112,15 @@ class PairCandidate:
     value_left: Any
     value_right: Any
     anchor_diagnosis: str | None = None
+    priority: int = 0
 
     @property
     def source_set(self) -> frozenset[tuple[str, str]]:
         return frozenset((self.left.key, self.right.key))
+
+    @property
+    def cap_key(self) -> tuple[str, ...]:
+        return tuple(sorted({self.left.patient_id, self.right.patient_id}))
 
     @property
     def relation(self) -> str:
@@ -127,15 +139,34 @@ class TrajectoryCandidate:
     patient_id: str
     admissions: tuple[Admission, Admission, Admission]
     values: tuple[Any, Any, Any]
+    priority: int = 0
 
     @property
     def source_set(self) -> frozenset[tuple[str, str]]:
         return frozenset(adm.key for adm in self.admissions)
 
     @property
+    def cap_key(self) -> tuple[str, ...]:
+        return (self.patient_id,)
+
+    @property
     def relation(self) -> str:
         normalized = [normalize_field(self.field, value) for value in self.values]
         return "same" if len(set(normalized)) == 1 else "different"
+
+def spread_priorities(n_windows: int, cap: int) -> list[int]:
+    """Ranks a patient's chronological windows so the first `cap` ranks are spread evenly over the timeline."""
+    if n_windows <= cap:
+        return list(range(n_windows))
+    if cap == 1:
+        preferred = [(n_windows - 1) // 2]
+    else:
+        preferred = sorted({round(i * (n_windows - 1) / (cap - 1)) for i in range(cap)})
+    order = preferred + [idx for idx in range(n_windows) if idx not in preferred]
+    priorities = [0] * n_windows
+    for rank, idx in enumerate(order):
+        priorities[idx] = rank
+    return priorities
 
 def stable_rank(*parts: object) -> int:
     raw = "|".join(map(str, (SEED, *parts))).encode("utf-8")
@@ -229,7 +260,7 @@ class GroundingVerifier:
         self.failures: list[tuple[Any, ...]] = []
 
     def pdf_path(self, adm: Admission) -> Path:
-        return PDF_DIR / f"Patient_{adm.patient_id}_Admission_{adm.admission_id}.pdf"
+        return PDF_DIR / admission_pdf_name(adm.patient_id, adm.admission_id)
 
     def contains(self, adm: Admission, text: str) -> bool:
         path = self.pdf_path(adm)
@@ -256,7 +287,7 @@ def source_entry(adm: Admission, chunk: str) -> dict[str, str]:
     return {
         "patient_id": adm.patient_id,
         "admission_id": adm.admission_id,
-        "source_pdf": f"Patient_{adm.patient_id}_Admission_{adm.admission_id}.pdf",
+        "source_pdf": admission_pdf_name(adm.patient_id, adm.admission_id),
         "source_chunk": chunk,
     }
 
@@ -285,16 +316,22 @@ def render_pair(
                 )
         else:
             if n_left == n_right:
-                summary = "The two admissions had the same number of recorded diagnoses."
+                summary = "Both of our admissions had the same number of recorded diagnoses."
             elif n_left > n_right:
-                summary = f"Patient {left.patient_id}'s admission had more recorded diagnoses."
+                summary = "My admission had more recorded diagnoses than my family member's."
             else:
-                summary = f"Patient {right.patient_id}'s admission had more recorded diagnoses."
-    else:
+                summary = "My family member's admission had more recorded diagnoses than mine."
+    elif candidate.task == "same_patient_two_admissions":
         summary = (
             f"My recorded {spec['label']} was the same."
             if candidate.relation == "same"
             else f"My recorded {spec['label']} differed."
+        )
+    else:
+        summary = (
+            f"The recorded {spec['label']} was the same for both of us."
+            if candidate.relation == "same"
+            else f"The recorded {spec['label']} differed between us."
         )
 
     if candidate.task == "same_patient_two_admissions":
@@ -311,16 +348,15 @@ def render_pair(
     else:
         diagnosis = candidate.anchor_diagnosis or ""
         question = (
-            f"Patient {left.patient_id} (hospitalization beginning {left.admit_date}) "
-            f"and patient {right.patient_id} (hospitalization beginning "
-            f"{right.admit_date}) shared the principal diagnosis \"{diagnosis}\". "
-            f"What was the {spec['label']} for each, and was it the same or different?"
+            f"I keep my family member's hospital records together with mine. "
+            f"We were both hospitalized with the principal diagnosis \"{diagnosis}\": "
+            f"my stay began on {left.admit_date} and theirs began on {right.admit_date}. "
+            f"What was the {spec['label']} for each of us, and was it the same or different?"
         )
         answer = (
-            f"Patient {left.patient_id}, hospitalization beginning {left.admit_date}: "
-            f"{spec['pdf_label']}: {left_value}; patient {right.patient_id}, "
-            f"hospitalization beginning {right.admit_date}: "
-            f"{spec['pdf_label']}: {right_value}. {summary}"
+            f"My hospitalization beginning {left.admit_date}: "
+            f"{spec['pdf_label']}: {left_value}; my family member's hospitalization "
+            f"beginning {right.admit_date}: {spec['pdf_label']}: {right_value}. {summary}"
         )
 
     evidence = [
@@ -361,7 +397,7 @@ def render_trajectory(
     else:
         summary = f"My {spec['label']} varied across the three hospitalizations."
 
-    answer = f"{details}. {summary}"
+    answer = f"{details[:1].upper()}{details[1:]}. {summary}"
 
     evidence = [
         (adm, evidence_chunk(candidate.field, raw_value))
@@ -379,7 +415,10 @@ def make_same_patient_candidates(
         if len(admissions) < 2:
             continue
 
-        for left, right in combinations(admissions, 2):
+        windows = list(zip(admissions, admissions[1:]))
+        priorities = spread_priorities(len(windows), MAX_PAIRS_PER_PATIENT)
+
+        for (left, right), priority in zip(windows, priorities):
             for field in PAIR_FIELDS:
                 left_value = field_value(left, field)
                 right_value = field_value(right, field)
@@ -394,6 +433,7 @@ def make_same_patient_candidates(
                     right=right,
                     value_left=left_value,
                     value_right=right_value,
+                    priority=priority,
                 )
                 grouped[candidate.source_set].append(candidate)
 
@@ -408,7 +448,10 @@ def make_trajectory_candidates(
         if len(admissions) < 3:
             continue
 
-        for i in range(len(admissions) - 2):
+        n_windows = len(admissions) - 2
+        priorities = spread_priorities(n_windows, MAX_TRAJECTORIES_PER_PATIENT)
+
+        for i in range(n_windows):
             triple = (admissions[i], admissions[i + 1], admissions[i + 2])
 
             for field in TRAJECTORY_FIELDS:
@@ -422,6 +465,7 @@ def make_trajectory_candidates(
                     patient_id=pid,
                     admissions=triple,
                     values=values,
+                    priority=priorities[i],
                 )
                 grouped[candidate.source_set].append(candidate)
 
@@ -530,20 +574,30 @@ def choose_trajectory_candidate(
         ),
     )
 
+def ordered_source_sets(grouped_candidates: dict) -> list:
+    return sorted(
+        grouped_candidates.keys(),
+        key=lambda source_set: (
+            grouped_candidates[source_set][0].priority,
+            stable_rank(*sorted(source_set)),
+        ),
+    )
+
 def build_pair_items(
     grouped_candidates: dict[frozenset[tuple[str, str]], list[PairCandidate]],
     verifier: GroundingVerifier,
+    max_items_per_group: int,
 ) -> list[dict[str, Any]]:
     field_use: Counter[str] = Counter()
     relation_use: Counter[tuple[str, str]] = Counter()
+    group_use: Counter[tuple[str, ...]] = Counter()
     items: list[dict[str, Any]] = []
 
-    source_sets = sorted(
-        grouped_candidates.keys(),
-        key=lambda source_set: stable_rank(*sorted(source_set)),
-    )
+    for source_set in ordered_source_sets(grouped_candidates):
+        cap_key = grouped_candidates[source_set][0].cap_key
+        if group_use[cap_key] >= max_items_per_group:
+            continue
 
-    for source_set in source_sets:
         ordered = choose_pair_candidate(
             grouped_candidates[source_set],
             field_use,
@@ -600,6 +654,7 @@ def build_pair_items(
 
         field_use[accepted.field] += 1
         relation_use[(accepted.field, accepted.relation)] += 1
+        group_use[cap_key] += 1
 
     label = items[0]["comparison_type"] if items else "pair"
     print(f"{label}: {len(items)} items")
@@ -623,14 +678,14 @@ def build_trajectory_items(
 ) -> list[dict[str, Any]]:
     field_use: Counter[str] = Counter()
     relation_use: Counter[tuple[str, str]] = Counter()
+    group_use: Counter[tuple[str, ...]] = Counter()
     items: list[dict[str, Any]] = []
 
-    source_sets = sorted(
-        grouped_candidates.keys(),
-        key=lambda source_set: stable_rank(*sorted(source_set)),
-    )
+    for source_set in ordered_source_sets(grouped_candidates):
+        cap_key = grouped_candidates[source_set][0].cap_key
+        if group_use[cap_key] >= MAX_TRAJECTORIES_PER_PATIENT:
+            continue
 
-    for source_set in source_sets:
         ordered = choose_trajectory_candidate(
             grouped_candidates[source_set],
             field_use,
@@ -682,6 +737,7 @@ def build_trajectory_items(
 
         field_use[accepted.field] += 1
         relation_use[(accepted.field, accepted.relation)] += 1
+        group_use[cap_key] += 1
 
     print(f"same_patient_three_admission_trajectory: {len(items)} items")
     print("  fields:", dict(field_use))
@@ -700,11 +756,30 @@ def validate_final(items: list[dict[str, Any]]) -> None:
     if len(ids) != len(set(ids)):
         raise RuntimeError("Duplicate item IDs detected.")
 
+    caps = {
+        "same_patient_two_admissions": MAX_PAIRS_PER_PATIENT,
+        "same_patient_three_admission_trajectory": MAX_TRAJECTORIES_PER_PATIENT,
+        "cross_patient_two_admissions": MAX_CROSS_ITEMS_PER_PATIENT_PAIR,
+    }
+    group_counts = Counter(
+        (item["comparison_type"], tuple(sorted({str(s["patient_id"]) for s in item["sources"]})))
+        for item in items
+    )
+    for (ctype, group), count in group_counts.items():
+        if count > caps.get(ctype, 0):
+            raise RuntimeError(f"{ctype}: {count} items for {group} exceed the cap of {caps.get(ctype, 0)}.")
+
     source_sets: set[tuple[str, frozenset[tuple[str, str]]]] = set()
 
     for item in items:
         sources = item["sources"]
         ctype = item["comparison_type"]
+
+        if not FIRST_PERSON_RE.search(item["question"]):
+            raise RuntimeError(f"{item['id']}: question is not phrased in the first person.")
+
+        if any(str(source["patient_id"]) in item["question"] for source in sources):
+            raise RuntimeError(f"{item['id']}: patient id leaked into the question.")
 
         source_set = frozenset(
             (
@@ -754,15 +829,21 @@ def main() -> None:
     trajectory_candidates = make_trajectory_candidates(by_patient)
     cross_patient_candidates = make_cross_candidates(by_patient)
 
-    print("Eligible unique source sets before grounding:")
-    print("  same-patient pairs:", len(same_patient_candidates))
+    print("Eligible unique source sets before grounding and per-patient caps:")
+    print("  same-patient consecutive pairs:", len(same_patient_candidates))
     print("  three-admission trajectories:", len(trajectory_candidates))
     print("  cross-patient pairs:", len(cross_patient_candidates))
+    print(
+        "Caps: pairs/patient =", MAX_PAIRS_PER_PATIENT,
+        "| trajectories/patient =", MAX_TRAJECTORIES_PER_PATIENT,
+        "| cross items/patient pair =", MAX_CROSS_ITEMS_PER_PATIENT_PAIR,
+    )
     print()
 
     pair_items = build_pair_items(
         same_patient_candidates,
         verifier,
+        MAX_PAIRS_PER_PATIENT,
     )
     print()
 
@@ -775,6 +856,7 @@ def main() -> None:
     cross_items = build_pair_items(
         cross_patient_candidates,
         verifier,
+        MAX_CROSS_ITEMS_PER_PATIENT_PAIR,
     )
 
     items = pair_items + trajectory_items + cross_items

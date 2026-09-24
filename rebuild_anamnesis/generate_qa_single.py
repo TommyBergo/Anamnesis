@@ -1,24 +1,28 @@
-"""Generates two deterministic, rule-based QA pairs per admission from the enriched MIMIC-III corpus."""
+"""Generates two deterministic, rule-based, first-person QA pairs per admission from the enriched MIMIC-IV corpus."""
 
 from __future__ import annotations
 
 import json
 import re
-import sys
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
-BASE_DIR = Path(__file__).resolve().parent
-SOURCE_JSON = BASE_DIR / "mimic_stratified_sample.json"
-PDF_DIR = BASE_DIR / "Ammissioni_PDF_stratified_enriched"
-OUTPUT_PATH = BASE_DIR / "single_dataset_rulebased.jsonl"
-
-from shared.mimic_section_parser import parse_sections
+from shared.mimic_iv import (
+    DIED_IN_HOSPITAL_DISPOSITION,
+    UNRECORDED_DISPOSITION,
+    resolve_disposition,
+)
+from shared.mimic_section_parser import parse_admission_sections
 from shared.pdf_paging import extract_paged_document, find_pages_for_text, PagedDocument
 from shared.kotlin_mirror import Chunk, clean_text, create_clinical_chunks, _WHITESPACE_RUN
+from shared.pipeline_paths import (
+    PDF_DIR,
+    SAMPLE_JSON as SOURCE_JSON,
+    SINGLE_QA_PATH as OUTPUT_PATH,
+    WORK_DIR,
+    admission_pdf_name,
+)
 
 QUESTIONS_PER_ADMISSION = 2
 
@@ -42,7 +46,11 @@ TYPE_TARGET_WEIGHTS = {
     "negation_check": 0.06,
 }
 
-DEID_SURROGATE_RE = re.compile(r"\[\*\*")
+# MIMIC-III de-identification surrogates look like [**...**]; MIMIC-IV replaces PHI with "___".
+DEID_SURROGATE_RE = re.compile(r"\[\*\*|_{3,}")
+
+# Every question must be asked by the patient about their own record.
+FIRST_PERSON_RE = re.compile(r"\b(?:I|me|my|mine|myself)\b")
 REJECT_DEID_SURROGATE_QA = True
 
 MAX_YES_NO_SHARE = 0.12
@@ -70,6 +78,24 @@ SECTION_LOOKUP_PRIORITY = (
     "Discharge Medications",
     "Past Medical History",
     "Brief Hospital Course",
+    "Radiology: Impression",
+    "Radiology: Findings",
+    "Nursing: Assessment",
+    "Nursing: Plan",
+    "Physician: Assessment and Plan",
+    "Consult: Impression",
+    "Consult: Recommendations",
+)
+
+# Sections read from non-discharge notes, keyed as "<note category>: <section>".
+NOTE_SECTION_LOOKUPS = (
+    ("Radiology", "Impression"),
+    ("Radiology", "Findings"),
+    ("Nursing", "Assessment"),
+    ("Nursing", "Plan"),
+    ("Physician", "Assessment and Plan"),
+    ("Consult", "Impression"),
+    ("Consult", "Recommendations"),
 )
 
 SECTION_LOOKUP_RANK = {
@@ -80,9 +106,6 @@ SECTION_LOOKUP_RANK = {
 
 CHUNK_MAX_CHARS = 500
 CHUNK_OVERLAP_CHARS = 100
-
-MIMIC_90_PLUS_SENTINEL_AGE = 90
-MIMIC_90_PLUS_RAW_THRESHOLD = 150
 
 SERVICE_RE = re.compile(
     r"^Service:[ \t]*(\S.*?)\s*$",
@@ -245,6 +268,8 @@ def _neutralize_deid(text: str) -> str:
         lambda m: _deid_placeholder(m.group(1)),
         text,
     )
+
+    neutral = re.sub(r"_{3,}", "(removed)", neutral)
 
     neutral = re.sub(r"\(\s*", "(", neutral)
     neutral = re.sub(r"\s+([,.;:])", r"\1", neutral)
@@ -824,53 +849,6 @@ def _extract_header_value(
     value = _normalize_ws(match.group(1))
     return value or None
 
-def compute_age(
-    dob: str,
-    admittime: str,
-) -> Optional[int]:
-    try:
-        dob_dt = datetime.strptime(
-            dob.split(" ")[0],
-            "%Y-%m-%d",
-        )
-        adm_dt = datetime.strptime(
-            admittime.split(" ")[0],
-            "%Y-%m-%d",
-        )
-    except (ValueError, IndexError):
-        return None
-
-    raw_year_gap = adm_dt.year - dob_dt.year
-
-    if raw_year_gap >= MIMIC_90_PLUS_RAW_THRESHOLD:
-        return MIMIC_90_PLUS_SENTINEL_AGE
-
-    age = raw_year_gap - (
-        (adm_dt.month, adm_dt.day)
-        < (dob_dt.month, dob_dt.day)
-    )
-
-    return age if age >= 0 else None
-
-def compute_los_days(
-    admittime: str,
-    dischtime: str,
-) -> Optional[int]:
-    try:
-        t_in = datetime.strptime(
-            admittime.split(" ")[0],
-            "%Y-%m-%d",
-        )
-        t_out = datetime.strptime(
-            dischtime.split(" ")[0],
-            "%Y-%m-%d",
-        )
-    except (ValueError, IndexError):
-        return None
-
-    days = (t_out - t_in).days
-    return days if days >= 0 else None
-
 def build_questions_for_admission(
     patient_info: dict,
     admission: dict,
@@ -881,10 +859,6 @@ def build_questions_for_admission(
 
     pid = patient_info["subject_id"]
     hadm = admission["hadm_id"]
-    dob = patient_info.get(
-        "dob",
-        "",
-    ).split(" ")[0]
 
     adm_date_raw = admission.get(
         "admittime",
@@ -894,7 +868,7 @@ def build_questions_for_admission(
     admission_ref = (
         f"my admission beginning on {adm_date_raw}"
         if adm_date_raw
-        else "this admission"
+        else "my admission"
     )
 
     disch_date_raw = admission.get(
@@ -902,16 +876,22 @@ def build_questions_for_admission(
         "",
     ).split(" ")[0]
 
-    admission_ref_by_discharge = (
-        f"my admission that ended on {disch_date_raw}"
-        if disch_date_raw
-        else "this admission"
+    sections_by_category = parse_admission_sections(
+        admission.get("notes", [])
     )
 
-    # MODIFICATO: Legge la nuova chiave multi-nota (clinical_notes) con fallback su discharge_summary
-    sections = parse_sections(
-        admission.get("clinical_notes", admission.get("discharge_summary", ""))
+    sections = dict(
+        sections_by_category.get(
+            "Discharge summary",
+            {},
+        )
     )
+
+    for category, section_name in NOTE_SECTION_LOOKUPS:
+        content = sections_by_category.get(category, {}).get(section_name)
+
+        if content:
+            sections[f"{category}: {section_name}"] = content
 
     items: list[dict] = []
     counter = [0]
@@ -931,6 +911,11 @@ def build_questions_for_admission(
         section_text: Optional[str] = None,
     ) -> None:
         counter[0] += 1
+
+        if not FIRST_PERSON_RE.search(question):
+            raise ValueError(
+                f"Question template is not in the first person: {question!r}"
+            )
 
         if REJECT_DEID_SURROGATE_QA and (
             _has_deid_surrogate(question)
@@ -1082,19 +1067,8 @@ def build_questions_for_admission(
         "Age at Admission",
     )
 
-    if age_value is None:
-        computed_age = compute_age(
-            dob,
-            admission.get(
-                "admittime",
-                "",
-            ),
-        )
-        age_value = (
-            str(computed_age)
-            if computed_age is not None
-            else None
-        )
+    if age_value is None and admission.get("age_at_admission") is not None:
+        age_value = str(admission["age_at_admission"])
 
     if age_value is not None:
         add(
@@ -1115,22 +1089,8 @@ def build_questions_for_admission(
         "Length of Stay",
     )
 
-    if los_value is None:
-        los_days = compute_los_days(
-            admission.get(
-                "admittime",
-                "",
-            ),
-            admission.get(
-                "dischtime",
-                "",
-            ),
-        )
-        los_value = (
-            f"{los_days} days"
-            if los_days is not None
-            else None
-        )
+    if los_value is None and admission.get("length_of_stay_days") is not None:
+        los_value = f"{admission['length_of_stay_days']} days"
 
     if los_value is not None:
         add(
@@ -1146,18 +1106,18 @@ def build_questions_for_admission(
             evidence_text=f"Length of Stay: {los_value}",
         )
 
-    # Nota: Usiamo il campo clinical_notes o discharge_summary per cercare il service
-    note_text_for_service = admission.get("clinical_notes", admission.get("discharge_summary", ""))
-    service_match = SERVICE_RE.search(note_text_for_service)
+    service = admission.get("service")
 
-    service = (
-        admission.get("service")
-        or (
-            service_match.group(1).strip()
-            if service_match
-            else None
-        )
-    )
+    if not service:
+        for note in admission.get("notes", []):
+            if note.get("category") != "Discharge summary":
+                continue
+
+            service_match = SERVICE_RE.search(note.get("text", ""))
+
+            if service_match:
+                service = service_match.group(1).strip()
+                break
 
     if service:
         add(
@@ -1173,12 +1133,15 @@ def build_questions_for_admission(
             evidence_text=f"Hospital Service: {service}",
         )
 
-    disposition = sections.get(
-        "Discharge Disposition",
-        "",
-    ).strip()
+    disposition = resolve_disposition(
+        admission,
+        sections_by_category,
+    )
 
-    if disposition:
+    if disposition not in (
+        DIED_IN_HOSPITAL_DISPOSITION,
+        UNRECORDED_DISPOSITION,
+    ):
         add(
             (
                 f"Where did I go after leaving the hospital at the "
@@ -1190,26 +1153,6 @@ def build_questions_for_admission(
             page_override=1,
             subkey="disposition",
             evidence_text=f"Discharge Disposition: {disposition}",
-        )
-
-    if "has_mental_health_diagnosis" in admission:
-        answer = (
-            "Yes"
-            if admission["has_mental_health_diagnosis"]
-            else "No"
-        )
-
-        add(
-            (
-                f"Was any mental health condition recorded for me "
-                f"in {admission_ref}?"
-            ),
-            answer,
-            "header",
-            "header_fact_enriched",
-            page_override=1,
-            subkey="mental_health",
-            evidence_text=f"Mental Health Diagnosis: {answer}",
         )
 
     if "had_icu_stay" in admission:
@@ -1232,25 +1175,6 @@ def build_questions_for_admission(
             evidence_text=f"ICU Stay: {answer}",
         )
 
-    if "hospital_expire_flag" in admission:
-        answer = (
-            "Yes"
-            if admission["hospital_expire_flag"]
-            else "No"
-        )
-
-        add(
-            (
-                f"Did I experience in-hospital mortality during {admission_ref}?"
-            ),
-            answer,
-            "header",
-            "header_fact_enriched",
-            page_override=1,
-            subkey="mortality",
-            evidence_text=f"In-Hospital Mortality: {answer}",
-        )
-
     if admission.get("num_diagnoses") is not None:
         n_diag = admission["num_diagnoses"]
 
@@ -1269,8 +1193,8 @@ def build_questions_for_admission(
 
     section_questions = {
         "Chief Complaint": (
-            f"What symptoms or problems did I present with when I was "
-            f"admitted on {adm_date_raw or 'this admission'}?"
+            f"What symptoms or problems did I present with at the start of "
+            f"{admission_ref}?"
         ),
         "Discharge Condition": (
             f"How was my health condition described when I was sent home after "
@@ -1291,6 +1215,31 @@ def build_questions_for_admission(
         "Brief Hospital Course": (
             f"What procedures or clinical events happened to me during "
             f"{admission_ref}?"
+        ),
+        "Radiology: Impression": (
+            f"What was the overall conclusion of my imaging report during "
+            f"{admission_ref}?"
+        ),
+        "Radiology: Findings": (
+            f"What did my imaging study show during {admission_ref}?"
+        ),
+        "Nursing: Assessment": (
+            f"How did the nurses assess my condition during {admission_ref}?"
+        ),
+        "Nursing: Plan": (
+            f"What was my nursing care plan during {admission_ref}?"
+        ),
+        "Physician: Assessment and Plan": (
+            f"What was my doctors' assessment and plan for me during "
+            f"{admission_ref}?"
+        ),
+        "Consult: Impression": (
+            f"What was the consulting specialist's impression of my condition "
+            f"during {admission_ref}?"
+        ),
+        "Consult: Recommendations": (
+            f"What did the specialist who was consulted about me recommend "
+            f"during {admission_ref}?"
         ),
     }
 
@@ -1316,8 +1265,36 @@ def build_questions_for_admission(
             f"at discharge for {admission_ref}?"
         ),
         "Brief Hospital Course": (
-            f"How does the hospital course summary begin for "
+            f"How does the summary of my hospital course begin for "
             f"{admission_ref}?"
+        ),
+        "Radiology: Impression": (
+            f"What is the first conclusion stated in my imaging report during "
+            f"{admission_ref}?"
+        ),
+        "Radiology: Findings": (
+            f"What is the first finding described in my imaging report during "
+            f"{admission_ref}?"
+        ),
+        "Nursing: Assessment": (
+            f"What is the first observation in the nurses' assessment of me "
+            f"during {admission_ref}?"
+        ),
+        "Nursing: Plan": (
+            f"What is the first step of my nursing care plan during "
+            f"{admission_ref}?"
+        ),
+        "Physician: Assessment and Plan": (
+            f"How does my doctors' assessment and plan begin for "
+            f"{admission_ref}?"
+        ),
+        "Consult: Impression": (
+            f"How does the consulting specialist's impression of my condition "
+            f"begin for {admission_ref}?"
+        ),
+        "Consult: Recommendations": (
+            f"What was the first recommendation the consulting specialist made "
+            f"for me during {admission_ref}?"
         ),
     }
 
@@ -2200,6 +2177,11 @@ def validate_items(
                 f"{item['id']}: patient id leaked into the question."
             )
 
+        if not FIRST_PERSON_RE.search(item["question"]):
+            raise RuntimeError(
+                f"{item['id']}: question is not phrased in the first person."
+            )
+
     selected_admissions = set(by_admission)
 
     missing_admissions = sorted(
@@ -2438,7 +2420,7 @@ def _enforce_distinct_evidence_per_admission(
 
 def main() -> None:
 
-    print(f"Script directory: {BASE_DIR}")
+    print(f"Work directory: {WORK_DIR}")
     print(f"Source JSON: {SOURCE_JSON}")
     print(f"PDF directory: {PDF_DIR}")
 
@@ -2482,11 +2464,9 @@ def main() -> None:
 
         for admission in admissions:
 
-            document_name = (
-                f"Patient_"
-                f"{info['subject_id']}_"
-                f"Admission_"
-                f"{admission['hadm_id']}.pdf"
+            document_name = admission_pdf_name(
+                info["subject_id"],
+                admission["hadm_id"],
             )
 
             pdf_path = (
@@ -2512,11 +2492,9 @@ def main() -> None:
                 if other["hadm_id"] == admission["hadm_id"]:
                     continue
 
-                sibling_document_name = (
-                    f"Patient_"
-                    f"{info['subject_id']}_"
-                    f"Admission_"
-                    f"{other['hadm_id']}.pdf"
+                sibling_document_name = admission_pdf_name(
+                    info["subject_id"],
+                    other["hadm_id"],
                 )
 
                 if (PDF_DIR / sibling_document_name).exists():
