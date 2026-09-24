@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+package com.example.executorchllamademo
+
+import android.content.ContentResolver
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.net.Uri
+import java.io.FileNotFoundException
+
+/**
+ * Helper class for loading and processing images for vision models.
+ */
+class ETImage(
+    private val contentResolver: ContentResolver,
+    val uri: Uri,
+    sideSize: Int
+) {
+    var width: Int = 0
+        private set
+    var height: Int = 0
+        private set
+    val bytes: ByteArray = getBytesFromImageURI(uri, sideSize)
+
+    fun getInts(): IntArray {
+        return IntArray(bytes.size) { i ->
+            bytes[i].toInt() and 0xFF
+        }
+    }
+
+    fun getFloats(): FloatArray {
+        return FloatArray(bytes.size) { i ->
+            ((bytes[i].toInt() and 0xFF) / 255.0f - 0.5f) / 0.5f
+        }
+    }
+
+    private fun getBytesFromImageURI(uri: Uri, sideSize: Int): ByteArray {
+        try {
+            val bitmap = resizeImage(uri, sideSize)
+
+            if (bitmap == null) {
+                ETLogging.getInstance().log("Unable to get bytes from Image URI. Bitmap is null")
+                return ByteArray(0)
+            }
+
+            width = bitmap.width
+            height = bitmap.height
+
+            val rgbValues = ByteArray(width * height * 3)
+
+            for (y in 0 until height) {
+                for (x in 0 until width) {
+                    val color = bitmap.getPixel(x, y)
+
+                    val red = Color.red(color)
+                    val green = Color.green(color)
+                    val blue = Color.blue(color)
+
+                    rgbValues[y * width + x] = red.toByte()
+                    rgbValues[(y * width + x) + height * width] = green.toByte()
+                    rgbValues[(y * width + x) + 2 * height * width] = blue.toByte()
+                }
+            }
+            bitmap.recycle()
+            return rgbValues
+        } catch (e: FileNotFoundException) {
+            throw RuntimeException(e)
+        }
+    }
+
+    private fun resizeImage(uri: Uri, sideSize: Int): Bitmap? {
+        val inputStream = contentResolver.openInputStream(uri)
+        if (inputStream == null) {
+            ETLogging.getInstance().log("Unable to resize image, input stream is null")
+            return null
+        }
+        val bitmap = inputStream.use {
+            BitmapFactory.decodeStream(it)
+        }
+        if (bitmap == null) {
+            ETLogging.getInstance().log("Unable to resize image, bitmap during decode stream is null")
+            return null
+        }
+        val scaled = Bitmap.createScaledBitmap(bitmap, sideSize, sideSize, true)
+        if (scaled !== bitmap) {
+            bitmap.recycle()
+        }
+        return scaled
+    }
+
+}

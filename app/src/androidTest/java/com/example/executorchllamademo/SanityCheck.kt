@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+package com.example.executorchllamademo
+
+import android.util.Log
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Assert.assertFalse
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.pytorch.executorch.extension.llm.LlmCallback
+import org.pytorch.executorch.extension.llm.LlmModule
+import java.io.File
+
+/** Sanity check test that loads a model and generates text, with the model/tokenizer filenames configurable via instrumentation arguments. */
+@RunWith(AndroidJUnit4::class)
+class SanityCheck : LlmCallback {
+
+    companion object {
+        private const val RESOURCE_PATH = "/data/local/tmp/llama/"
+        private const val DEFAULT_MODEL_FILE = "stories110M.pte"
+        private const val DEFAULT_TOKENIZER_FILE = "tokenizer.model"
+        private const val TAG = "SanityCheck"
+    }
+
+    private lateinit var modelFile: String
+    private lateinit var tokenizerFile: String
+    private val results = mutableListOf<String>()
+
+    @Before
+    fun setUp() {
+        val args = InstrumentationRegistry.getArguments()
+        modelFile = args.getString("modelFile", DEFAULT_MODEL_FILE) ?: DEFAULT_MODEL_FILE
+        tokenizerFile = args.getString("tokenizerFile", DEFAULT_TOKENIZER_FILE) ?: DEFAULT_TOKENIZER_FILE
+        Log.i(TAG, "Using model: $modelFile, tokenizer: $tokenizerFile")
+    }
+
+    @Test
+    fun testLoadAndGenerate() {
+        val tokenizerPath = RESOURCE_PATH + tokenizerFile
+        val model = File(RESOURCE_PATH + modelFile)
+        val module = LlmModule(model.path, tokenizerPath, 0.8f)
+
+        module.load()
+
+        module.generate("How do you do! I'm testing llm on mobile device", this)
+
+        assertFalse("Should receive at least one result token", results.isEmpty())
+    }
+
+    override fun onResult(result: String) {
+        results.add(result)
+    }
+
+    override fun onStats(result: String) {
+    }
+}
