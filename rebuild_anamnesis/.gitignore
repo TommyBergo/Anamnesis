@@ -1,0 +1,13 @@
+# Pipeline outputs are derived from credentialed MIMIC-IV data and must never be committed.
+# They are written to WORK_DIR (default /home/tommaso/anamnesis_output/, see shared/pipeline_paths.py);
+# these patterns catch them if ANAMNESIS_WORK_DIR ever points inside the repository.
+Admission_PDFs_stratified_enriched/
+*.pdf
+*.jsonl
+mimic_stratified_sample.json
+mimic_stratified_sample_report.md
+anamnesis_output/
+
+# Python bytecode
+__pycache__/
+*.py[cod]

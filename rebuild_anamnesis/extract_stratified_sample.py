@@ -14,6 +14,7 @@ from shared.mimic_common import compute_age_at_admission, compute_los_days
 from shared.mimic_iv import (
     NOTE_CATEGORY_ORDER,
     NOTE_COLUMNS,
+    NOTE_DETAIL_COLUMNS,
     NOTE_SOURCES,
     REQUIRED_NOTE_TABLES,
     NoteSource,
@@ -22,11 +23,16 @@ from shared.mimic_iv import (
     label_discharge_location,
     label_note_type,
     label_service,
-    module_dirs,
     race_group,
     require_table,
 )
-from shared.pipeline_paths import DEFAULT_DATA_DIR, SAMPLE_JSON, SAMPLE_REPORT_MD
+from shared.pipeline_paths import (
+    MIMIC_IV_HOSP_DIR,
+    MIMIC_IV_ICU_DIR,
+    MIMIC_IV_NOTE_DIR,
+    SAMPLE_JSON,
+    SAMPLE_REPORT_MD,
+)
 
 # Balanced marginally (one variable at a time) so that adding a variable never fragments the
 # population into near-empty joint strata.
@@ -39,7 +45,10 @@ STRATUM_LABELS = {
     "note_length_quintile": "Note-length quintile",
 }
 
-NOTE_CHUNK_ROWS = 100_000
+# MIMIC-IV-Note v2.2 discharge summaries average ~10.5k characters, so 25k rows keep each text chunk
+# near 300 MB in memory. Detail tables carry no free text and can be read in larger chunks.
+NOTE_CHUNK_ROWS = 25_000
+DETAIL_CHUNK_ROWS = 500_000
 
 
 def quintile_bucket(value: float, sorted_values: list[float]) -> str:
@@ -51,13 +60,13 @@ def quintile_bucket(value: float, sorted_values: list[float]) -> str:
     return "Q5_80-100"
 
 
-def available_note_sources(note_dirs: list[Path]) -> list[tuple[NoteSource, Path]]:
+def available_note_sources(note_dir: Path) -> list[tuple[NoteSource, Path]]:
     available = []
     for source in NOTE_SOURCES:
-        path = find_table(note_dirs, source.table)
+        path = find_table(note_dir, source.table)
         if path is None:
             if source.table in REQUIRED_NOTE_TABLES:
-                require_table(note_dirs, source.table)
+                require_table(note_dir, source.table)
             print(f"  note source '{source.table}' ({source.category}) not found - skipped")
             continue
         print(f"  note source '{source.table}' ({source.category}): {path}")
@@ -78,19 +87,25 @@ def stream_notes(path: Path):
 
 def phase1_note_length_index(note_sources: list[tuple[NoteSource, Path]]) -> pd.DataFrame:
     print("Phase 1: streaming clinical-note tables for per-admission note lengths...")
-    lengths: dict[tuple[int, int], int] = defaultdict(int)
+    partial_lengths: list[pd.DataFrame] = []
     for source, path in note_sources:
         rows_seen = 0
         for chunk in stream_notes(path):
             rows_seen += len(chunk)
-            for subj, hadm, text in zip(chunk["subject_id"], chunk["hadm_id"], chunk["text"]):
-                lengths[(int(subj), int(hadm))] += len(text.strip())
+            partial_lengths.append(
+                chunk.assign(note_length=chunk["text"].str.strip().str.len())
+                .groupby(["subject_id", "hadm_id"], as_index=False)["note_length"]
+                .sum()
+            )
         print(f"  {source.table}: {rows_seen:,} notes linked to an admission")
-    print(f"Phase 1 done: {len(lengths):,} admissions have at least one clinical note")
-    return pd.DataFrame(
-        [(subj, hadm, length) for (subj, hadm), length in lengths.items()],
-        columns=["subject_id", "hadm_id", "note_length"],
+    lengths = (
+        pd.concat(partial_lengths, ignore_index=True)
+        .groupby(["subject_id", "hadm_id"], as_index=False)["note_length"]
+        .sum()
+        .astype("int64")
     )
+    print(f"Phase 1 done: {len(lengths):,} admissions have at least one clinical note")
+    return lengths
 
 
 def load_principal_diagnoses(diagnoses_path: Path, dictionary_path: Path) -> pd.DataFrame:
@@ -226,14 +241,27 @@ def phase2_select_patients(
 
 
 def load_note_details(detail_path: Path | None, note_ids: set[str]) -> dict[str, dict[str, str]]:
-    details: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
     if detail_path is None or not note_ids:
         return {}
-    for chunk in pd.read_csv(detail_path, dtype=str, chunksize=NOTE_CHUNK_ROWS):
-        chunk = chunk[chunk["note_id"].isin(note_ids)]
-        for note_id, field_name, field_value in zip(chunk["note_id"], chunk["field_name"], chunk["field_value"]):
-            if pd.notna(field_name) and pd.notna(field_value):
-                details[note_id][str(field_name)].append(str(field_value))
+    matches = [
+        chunk[chunk["note_id"].isin(note_ids)]
+        for chunk in pd.read_csv(
+            detail_path,
+            usecols=lambda column: column in NOTE_DETAIL_COLUMNS,
+            dtype=str,
+            chunksize=DETAIL_CHUNK_ROWS,
+        )
+    ]
+    if not matches:
+        return {}
+    rows = pd.concat(matches, ignore_index=True).dropna(subset=["field_name", "field_value"])
+    if "field_ordinal" in rows.columns:
+        rows = rows.assign(field_ordinal=pd.to_numeric(rows["field_ordinal"], errors="coerce"))
+        rows = rows.sort_values(["note_id", "field_name", "field_ordinal"], kind="stable")
+
+    details: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+    for note_id, field_name, field_value in zip(rows["note_id"], rows["field_name"], rows["field_value"]):
+        details[note_id][field_name].append(field_value)
     return {
         note_id: {name: "; ".join(values) for name, values in fields.items()}
         for note_id, fields in details.items()
@@ -243,7 +271,7 @@ def load_note_details(detail_path: Path | None, note_ids: set[str]) -> dict[str,
 def phase3_pull_notes(
     selected_set: set[int],
     note_sources: list[tuple[NoteSource, Path]],
-    note_dirs: list[Path],
+    note_dir: Path,
 ) -> dict[tuple[int, int], list[dict]]:
     print("Phase 3: streaming clinical-note tables for the selected patients' full text...")
     notes_by_admission: dict[tuple[int, int], list[dict]] = defaultdict(list)
@@ -265,7 +293,7 @@ def phase3_pull_notes(
                 source_notes.append(((int(row.subject_id), int(row.hadm_id)), note))
 
         details = load_note_details(
-            find_table(note_dirs, source.detail_table),
+            find_table(note_dir, source.detail_table),
             {note["note_id"] for _, note in source_notes},
         )
         for key, note in source_notes:
@@ -292,13 +320,13 @@ def build_records(
     notes_by_admission: dict[tuple[int, int], list[dict]],
 ) -> list[dict]:
     patients_by_id = patients.set_index("subject_id").to_dict("index")
+    selected_attributes = admission_attributes[admission_attributes["subject_id"].isin(set(selected_subject_ids))]
+    attributes_by_subject = {subj_id: group for subj_id, group in selected_attributes.groupby("subject_id")}
     final_data = []
 
     for subj_id in sorted(selected_subject_ids):
         p_row = patients_by_id[subj_id]
-        p_admissions = admission_attributes[admission_attributes["subject_id"] == subj_id].sort_values(
-            ["admittime", "hadm_id"]
-        )
+        p_admissions = attributes_by_subject[subj_id].sort_values(["admittime", "hadm_id"])
         admissions = []
         for a_row in p_admissions.to_dict("records"):
             hadm_id = int(a_row["hadm_id"])
@@ -394,46 +422,46 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--n", type=int, default=300, help="number of patients to select")
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR, help="MIMIC-IV root (hosp/, icu/, note/)")
-    parser.add_argument(
-        "--note-dir", type=Path, default=None,
-        help="MIMIC-IV-Note folder, if it is not <data-dir>/note (the note module is a separate PhysioNet release)",
-    )
+    parser.add_argument("--hosp-dir", type=Path, default=MIMIC_IV_HOSP_DIR, help="MIMIC-IV hosp module folder")
+    parser.add_argument("--icu-dir", type=Path, default=MIMIC_IV_ICU_DIR, help="MIMIC-IV icu module folder")
+    parser.add_argument("--note-dir", type=Path, default=MIMIC_IV_NOTE_DIR, help="MIMIC-IV-Note note module folder")
     args = parser.parse_args()
 
-    data_dir: Path = args.data_dir
-    hosp_dirs = module_dirs(data_dir, "hosp")
-    icu_dirs = module_dirs(data_dir, "icu")
-    note_dirs = ([args.note_dir] if args.note_dir else []) + module_dirs(data_dir, "note")
-    print(f"MIMIC-IV data directory: {data_dir}")
+    hosp_dir: Path = args.hosp_dir
+    icu_dir: Path = args.icu_dir
+    note_dir: Path = args.note_dir
+    for label, directory in (("hosp", hosp_dir), ("icu", icu_dir), ("note", note_dir)):
+        if not directory.is_dir():
+            raise SystemExit(f"MIMIC-IV {label} directory not found: {directory}")
+        print(f"MIMIC-IV {label} directory: {directory}")
 
-    note_sources = available_note_sources(note_dirs)
+    note_sources = available_note_sources(note_dir)
     note_index = phase1_note_length_index(note_sources)
 
     print("Loading auxiliary tables once...")
     patients = pd.read_csv(
-        require_table(hosp_dirs, "patients"),
+        require_table(hosp_dir, "patients"),
         usecols=["subject_id", "gender", "anchor_age", "anchor_year", "anchor_year_group"],
     )
     admissions = pd.read_csv(
-        require_table(hosp_dirs, "admissions"),
+        require_table(hosp_dir, "admissions"),
         usecols=[
             "subject_id", "hadm_id", "admittime", "dischtime", "admission_type",
             "discharge_location", "insurance", "race", "hospital_expire_flag",
         ],
     )
     diagnoses = load_principal_diagnoses(
-        require_table(hosp_dirs, "diagnoses_icd"), require_table(hosp_dirs, "d_icd_diagnoses")
+        require_table(hosp_dir, "diagnoses_icd"), require_table(hosp_dir, "d_icd_diagnoses")
     )
-    icustays = load_icustays(require_table(icu_dirs, "icustays"))
-    services = load_services(require_table(hosp_dirs, "services"))
+    icustays = load_icustays(require_table(icu_dir, "icustays"))
+    services = load_services(require_table(hosp_dir, "services"))
     admission_attributes = join_admission_attributes(admissions, diagnoses, icustays, services)
 
     selected_subject_ids, representative = phase2_select_patients(
         note_index, patients, admissions, n=args.n, seed=args.seed
     )
 
-    notes_by_admission = phase3_pull_notes(set(selected_subject_ids), note_sources, note_dirs)
+    notes_by_admission = phase3_pull_notes(set(selected_subject_ids), note_sources, note_dir)
     final_data = build_records(selected_subject_ids, patients, admission_attributes, notes_by_admission)
     SAMPLE_JSON.parent.mkdir(parents=True, exist_ok=True)
     write_balance_report(representative, args.n, args.seed, selected_subject_ids, final_data)

@@ -27,8 +27,8 @@ FIRST_PERSON_RE = re.compile(r"\b(?:I|me|my|mine|myself|we|us|our)\b")
 
 # Volume limits. Item count does not change the on-device index (that depends only on the PDFs),
 # but every item costs one retrieval plus one full generation per evaluated configuration, and
-# all-pairs enumeration lets a few long-stay patients dominate the multi-document scores (in the
-# MIMIC-IV demo one patient with 20 admissions alone yielded 190 of 741 pairs). Pairs therefore
+# all-pairs enumeration lets a few long-stay patients dominate the multi-document scores (it grows
+# quadratically: one patient with 20 admissions alone would yield 190 pairs). Pairs therefore
 # join consecutive admissions only, and each patient contributes a bounded number of windows,
 # spread evenly over their timeline.
 MAX_PAIRS_PER_PATIENT = 4

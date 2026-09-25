@@ -16,9 +16,9 @@ class NoteSource:
     detail_table: str
 
 
-# Discharge and radiology are the two tables MIMIC-IV-Note actually ships. Nursing, physician, and
-# consult tables are read whenever they are present with the same schema (e.g. a synthetic or
-# locally curated extension); a missing optional table is skipped, never an error.
+# Discharge and radiology are the two tables MIMIC-IV-Note v2.2 actually ships. Nursing, physician,
+# and consult tables are read whenever they are present with the same schema (e.g. a locally
+# curated extension); a missing optional table is skipped, never an error.
 NOTE_SOURCES: tuple[NoteSource, ...] = (
     NoteSource("discharge", "Discharge summary", "discharge_detail"),
     NoteSource("radiology", "Radiology", "radiology_detail"),
@@ -39,6 +39,10 @@ NOTE_TYPE_LABELS = {
 }
 
 NOTE_COLUMNS = ["note_id", "subject_id", "hadm_id", "note_type", "note_seq", "charttime", "text"]
+
+# MIMIC-IV-Note v2.2 detail tables are (note_id, subject_id, field_name, field_value, field_ordinal);
+# field_ordinal is optional so that three-column detail tables still load.
+NOTE_DETAIL_COLUMNS = frozenset({"note_id", "field_name", "field_value", "field_ordinal"})
 
 ADMISSION_TYPE_LABELS = {
     "EW EMER.": "Emergency",
@@ -91,26 +95,19 @@ UNRECORDED_DISPOSITION = "Not recorded"
 UNKNOWN_RACE_VALUES = frozenset({"UNKNOWN", "UNABLE TO OBTAIN", "PATIENT DECLINED TO ANSWER"})
 
 
-def find_table(directories: list[Path], table: str) -> Optional[Path]:
-    for directory in directories:
-        for suffix in (".csv.gz", ".csv"):
-            candidate = directory / f"{table}{suffix}"
-            if candidate.exists():
-                return candidate
+def find_table(directory: Path, table: str) -> Optional[Path]:
+    for suffix in (".csv.gz", ".csv"):
+        candidate = directory / f"{table}{suffix}"
+        if candidate.exists():
+            return candidate
     return None
 
 
-def require_table(directories: list[Path], table: str) -> Path:
-    path = find_table(directories, table)
+def require_table(directory: Path, table: str) -> Path:
+    path = find_table(directory, table)
     if path is None:
-        searched = ", ".join(str(d) for d in directories)
-        raise FileNotFoundError(f"Could not find {table} (.csv or .csv.gz) in: {searched}")
+        raise FileNotFoundError(f"Could not find {table} (.csv.gz or .csv) in: {directory}")
     return path
-
-
-def module_dirs(data_dir: Path, module: str) -> list[Path]:
-    """Accepts both the official layout (data_dir/hosp/...) and a flat folder of tables."""
-    return [data_dir / module, data_dir]
 
 
 def label_admission_type(code: object) -> str:

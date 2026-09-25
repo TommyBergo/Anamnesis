@@ -5,19 +5,19 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-REBUILD_DIR = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = REBUILD_DIR.parent
-
-# Raw MIMIC-IV tables (hosp/, icu/, note/ modules). Override with ANAMNESIS_DATA_DIR or --data-dir.
-DEFAULT_DATA_DIR = Path(
-    os.environ.get(
-        "ANAMNESIS_DATA_DIR",
-        PROJECT_ROOT / "data" / "mimic-iv-clinical-database-demo-2.2",
-    )
+# Raw MIMIC-IV module folders (official PhysioNet releases: MIMIC-IV v3.1 and MIMIC-IV-Note v2.2).
+# Edit these three values when deploying elsewhere, or override them per run with the
+# ANAMNESIS_HOSP_DIR / ANAMNESIS_ICU_DIR / ANAMNESIS_NOTE_DIR environment variables or the
+# --hosp-dir / --icu-dir / --note-dir flags of extract_stratified_sample.py.
+MIMIC_IV_HOSP_DIR = Path(os.environ.get("ANAMNESIS_HOSP_DIR", "/home/tommaso/datasets/MIMICIV/3.1/hosp"))
+MIMIC_IV_ICU_DIR = Path(os.environ.get("ANAMNESIS_ICU_DIR", "/home/tommaso/datasets/MIMICIV/3.1/icu"))
+MIMIC_IV_NOTE_DIR = Path(
+    os.environ.get("ANAMNESIS_NOTE_DIR", "/home/tommaso/datasets/MIMICIV/mimic-iv-note/2.2/note")
 )
 
-# Every generated artifact lands here. Override with ANAMNESIS_WORK_DIR to keep the source tree clean.
-WORK_DIR = Path(os.environ.get("ANAMNESIS_WORK_DIR", REBUILD_DIR))
+# Every generated artifact (JSON, report, PDFs, JSONL) lands here, outside the repository, because
+# outputs derived from credentialed MIMIC data must never be committed. Override with ANAMNESIS_WORK_DIR.
+WORK_DIR = Path(os.environ.get("ANAMNESIS_WORK_DIR", "/home/tommaso/anamnesis_output"))
 
 SAMPLE_JSON = WORK_DIR / "mimic_stratified_sample.json"
 SAMPLE_REPORT_MD = WORK_DIR / "mimic_stratified_sample_report.md"

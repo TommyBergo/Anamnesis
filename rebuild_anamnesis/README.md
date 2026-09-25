@@ -1,12 +1,13 @@
 # `rebuild_anamnesis/` — corpus & QA-dataset reproducibility scripts (MIMIC-IV)
 
 This folder holds the scripts that build the Anamnesis clinical-record corpus (one PDF per hospital
-admission, grouped per patient) and its rule-based QA benchmarks. Since the 2026-09-24 refactoring
-the pipeline reads **MIMIC-IV** (the `hosp`, `icu`, and `note` modules) from the project's `data/`
-folder. It renders **several clinical note types** per admission and emits **first-person**
-questions only. The original MIMIC-III pipeline that produced the paper's 138-admission corpus is
-described under "Historical provenance" below. The "Changelog" at the bottom lists every change
-made during the transition.
+admission, grouped per patient) and its rule-based QA benchmarks. The pipeline reads the official,
+credentialed **MIMIC-IV v3.1** (`hosp` and `icu` modules) and **MIMIC-IV-Note v2.2** (`note`
+module) releases from three configurable folders. It renders **several clinical note types** per
+admission, emits **first-person** questions only, and **caps multi-document items per patient**.
+The original MIMIC-III pipeline that produced the paper's 138-admission corpus is described under
+"Historical provenance" below. The "Changelog" at the bottom lists every change made during the
+transition.
 
 ## Requirements
 
@@ -15,38 +16,61 @@ made during the transition.
 
 ## Input data
 
-By default every script reads from:
+Only step 1 reads raw MIMIC data. It reads these tables from three module folders:
 
 ```text
-<project root>/data/mimic-iv-clinical-database-demo-2.2/
-├── hosp/   patients, admissions, diagnoses_icd, d_icd_diagnoses, services  (.csv.gz)
-├── icu/    icustays                                                        (.csv.gz)
-└── note/   discharge, discharge_detail, radiology, radiology_detail         (.csv.gz)
-            + optional: nursing, physician, consult (and their *_detail tables)
+MIMIC_IV_HOSP_DIR  (MIMIC-IV v3.1 hosp/)       patients, admissions, diagnoses_icd, d_icd_diagnoses, services
+MIMIC_IV_ICU_DIR   (MIMIC-IV v3.1 icu/)        icustays
+MIMIC_IV_NOTE_DIR  (MIMIC-IV-Note v2.2 note/)  discharge, discharge_detail, radiology, radiology_detail
+                                               + optional: nursing, physician, consult (and their *_detail tables)
 ```
 
-- The local `data/` folder holds the public MIMIC-IV **demo** (100 patients, 275 admissions). Its
-  `note/` tables are **synthetic**: they were generated with `data/.../generate_mock_notes.py` to
-  match the exact MIMIC-IV-Note schema (`note_id, subject_id, hadm_id, note_type, note_seq,
-  charttime, storetime, text`, plus `note_id, field_name, field_value` detail tables).
-- **MIMIC-IV-Note only releases `discharge` and `radiology` tables.** Nursing, physician, and
+- Every table is looked up as `<table>.csv.gz` first, then `<table>.csv`, directly inside its
+  module folder. Step 1 checks that all three folders exist and stops with a clear message if one
+  is missing. A missing required table raises `FileNotFoundError` with the folder it searched.
+- MIMIC-IV-Note is a **separate PhysioNet release** from MIMIC-IV, which is why the note folder is
+  configured independently. Both require credentialed access.
+- **MIMIC-IV-Note v2.2 only ships the `discharge` and `radiology` tables.** Nursing, physician, and
   consult notes exist only in MIMIC-III's `NOTEEVENTS`. The pipeline therefore treats `nursing`,
   `physician`, and `consult` as **optional** tables. They are ingested automatically when present
   in the same schema, and skipped with a log line when absent. Only `discharge` is mandatory.
-- Tables are looked up in `<data-dir>/<module>/` first, then in `<data-dir>/` (flat layout), as
-  `.csv.gz` or `.csv`.
-- With the real, credentialed MIMIC-IV the note module is a separate PhysioNet release. Point
-  `--note-dir` at it (step 1).
+- Note tables use the schema `note_id, subject_id, hadm_id, note_type, note_seq, charttime,
+  storetime, text`. The v2.2 detail tables use `note_id, subject_id, field_name, field_value,
+  field_ordinal`. `field_ordinal` is optional, so three-column detail tables (`note_id,
+  field_name, field_value`) also load.
+- About 52% of Note v2.2 radiology reports have no `hadm_id` (mostly outpatient and emergency
+  department studies). They cannot be attached to an admission and are skipped.
 
 ### Path configuration
 
-All paths live in `shared/pipeline_paths.py`:
+All paths live in `shared/pipeline_paths.py`. The three input folders are defined at the top of
+that file; edit them there when deploying to another machine, or override them per run:
 
-| Setting | Default | Override |
-|---|---|---|
-| MIMIC-IV root | `<project root>/data/mimic-iv-clinical-database-demo-2.2` | `ANAMNESIS_DATA_DIR` env var, or `--data-dir` (step 1) |
-| MIMIC-IV-Note folder | `<data-dir>/note` | `--note-dir` (step 1) |
-| Output ("work") directory | this folder (`rebuild_anamnesis/`) | `ANAMNESIS_WORK_DIR` env var |
+| Setting | Variable | Default | Override |
+|---|---|---|---|
+| MIMIC-IV `hosp` module | `MIMIC_IV_HOSP_DIR` | `/home/tommaso/datasets/MIMICIV/3.1/hosp` | `ANAMNESIS_HOSP_DIR` env var, or `--hosp-dir` (step 1) |
+| MIMIC-IV `icu` module | `MIMIC_IV_ICU_DIR` | `/home/tommaso/datasets/MIMICIV/3.1/icu` | `ANAMNESIS_ICU_DIR` env var, or `--icu-dir` (step 1) |
+| MIMIC-IV-Note `note` module | `MIMIC_IV_NOTE_DIR` | `/home/tommaso/datasets/MIMICIV/mimic-iv-note/2.2/note` | `ANAMNESIS_NOTE_DIR` env var, or `--note-dir` (step 1) |
+| Output ("work") directory | `WORK_DIR` | `/home/tommaso/anamnesis_output` (outside the repository) | `ANAMNESIS_WORK_DIR` env var |
+
+Precedence is command-line flag, then environment variable, then the default in
+`pipeline_paths.py`. `WORK_DIR` applies to every step. The input folders are only read by step 1.
+
+Every generated file (sample JSON, balance report, PDFs, QA JSONL) is written to `WORK_DIR`, never
+into the repository: these outputs contain credentialed MIMIC text. Step 1 creates the folder if it
+does not exist. As a safety net, `rebuild_anamnesis/.gitignore` also ignores every output file name
+and `__pycache__/`, in case `ANAMNESIS_WORK_DIR` is ever pointed inside the repository.
+
+Example (server deployment: point every module at the server's copy, write outputs elsewhere):
+
+```bash
+export ANAMNESIS_HOSP_DIR=/data/mimiciv/3.1/hosp
+export ANAMNESIS_ICU_DIR=/data/mimiciv/3.1/icu
+export ANAMNESIS_NOTE_DIR=/data/mimic-iv-note/2.2/note
+export ANAMNESIS_WORK_DIR=/scratch/anamnesis_run
+```
+
+Run steps 2-5 in the same shell, so they read step 1's output from the same `ANAMNESIS_WORK_DIR`.
 
 ## Layout
 
@@ -57,6 +81,7 @@ rebuild_anamnesis/
 ├── generate_qa_single.py            step 3
 ├── generate_qa_multidoc.py          step 4
 ├── split_qa_multidoc_by_patient.py  step 5
+├── .gitignore                       keeps pipeline outputs and bytecode out of git
 └── shared/
     ├── pipeline_paths.py            input/output locations for every step
     ├── mimic_iv.py                  MIMIC-IV table lookup, note-source registry, code-to-label maps
@@ -71,7 +96,7 @@ rebuild_anamnesis/
 Run from inside `rebuild_anamnesis/` (the scripts import `shared.*`), in this order:
 
 ```bash
-python extract_stratified_sample.py          # [--n 300] [--seed 42] [--data-dir ...] [--note-dir ...]
+python extract_stratified_sample.py          # [--n 300] [--seed 42] [--hosp-dir ...] [--icu-dir ...] [--note-dir ...]
 python render_admission_pdfs.py
 python generate_qa_single.py
 python generate_qa_multidoc.py
@@ -90,19 +115,21 @@ python split_qa_multidoc_by_patient.py
 
 ### 1. `extract_stratified_sample.py`
 
-- **Phase 1** streams every available note table in 100,000-row chunks. It sums note length per
-  `(subject_id, hadm_id)`, across all note categories. Only notes linked to an admission
-  (`hadm_id` not null) with non-null text count.
+- **Phase 1** streams every available note table in 25,000-row chunks (a Note v2.2 discharge
+  summary averages ~10.5k characters, so each chunk holds ~300 MB of text). It sums note length
+  per `(subject_id, hadm_id)`, across all note categories, with vectorized per-chunk group sums.
+  Only notes linked to an admission (`hadm_id` not null) with non-null text count.
 - **Phase 2** joins `admissions` and `patients` to that index and computes age at admission from
   `anchor_age`/`anchor_year`. It keeps each patient's earliest noted admission as that patient's
   stratification profile. It then selects `--n` patients (default 300; every eligible patient is
-  kept when the population is smaller, as with the 100-patient demo), with **no diagnosis-based
+  kept when the population is smaller), with **no diagnosis-based
   inclusion or exclusion**. Selection is a seeded greedy pass that keeps the sample's marginal
   shares of **sex, age quintile, race group, and note-length quintile** at or below their
   population shares, followed by a relaxed pass that fills any remaining slots.
 - **Phase 3** streams the note tables again for the selected patients only, attaches each note's
-  `*_detail` fields, and orders each admission's notes: discharge summary first, then radiology,
-  nursing, physician, and consult, each chronologically by `charttime`, then `note_seq`.
+  `*_detail` fields (multi-valued fields ordered by `field_ordinal` when present), and orders each
+  admission's notes: discharge summary first, then radiology, nursing, physician, and consult,
+  each chronologically by `charttime`, then `note_seq`.
 - Every admission of a selected patient that has at least one note is kept.
 - The balance report compares population and sample marginals for each stratification variable
   and counts notes per category.
@@ -209,13 +236,14 @@ The reference Android evaluation tests (`app/src/androidTest/.../rag/*MultiDoc*E
 read the dataset with `readLines()` and evaluate items one at a time against a per-patient index.
 
 - **Memory and storage are not affected by item count.** The index size, and with it peak RSS and
-  ObjectBox storage, depends only on the corpus (PDFs → chunks). 972 items are ~1 MB of JSON.
+  ObjectBox storage, depends only on the corpus (PDFs → chunks). The 762 multi-document items of
+  the reference run are ~0.7 MB of JSON.
 - **Evaluation time grows linearly with item count.** Every item costs one retrieval plus one full
   generation, at ~4.4 tokens/s on the reference device, for each evaluated retriever × generator ×
   evidence-condition configuration.
 - **Scores need statistical balance.** All-pairs enumeration is quadratic in a patient's number of
-  admissions. In the MIMIC-IV demo one patient with 20 admissions alone produced 190 of 741 pairs,
-  so the multi-document score would largely measure that one record.
+  admissions: one patient with 20 admissions alone would produce 190 pairs, so the
+  multi-document score would largely measure that one record.
 
 Pairs are therefore restricted to consecutive admissions, the same rule the paper already applies
 to trajectories so that the temporal reading stays unambiguous. Each patient contributes a bounded
@@ -225,29 +253,31 @@ windows spread evenly over the timeline, e.g. pairs (0,1), (6,7), (12,13), (18,1
 grounding. The caps are the constants `MAX_PAIRS_PER_PATIENT`, `MAX_TRAJECTORIES_PER_PATIENT`, and
 `MAX_CROSS_ITEMS_PER_PATIENT_PAIR` at the top of `generate_qa_multidoc.py`.
 
-## Reference run on the local demo data (2026-09-24)
+## Reference run on MIMIC-IV v3.1 + MIMIC-IV-Note v2.2 (2026-09-25)
+
+Defaults (`--n 300 --seed 42`, default `WORK_DIR`), on a 15 GB-RAM workstation.
 
 | Output | Count |
 |---|---|
-| Patients / admissions / PDFs | 100 / 275 / 275 |
-| Notes rendered | 275 discharge summaries + 275 radiology notes (no nursing/physician/consult tables in `data/`) |
-| Single-document items | 550 (2 per admission): header_fact 110, header_fact_enriched 110, section_lookup 110, specific_detail 110, multi_admission_distractor 110, negation_check 0 |
-| Multi-document, same-patient pairs | 112 (741 before consecutive-pairing + caps) |
-| Multi-document, trajectories | 47 (127 before caps) |
-| Multi-document, cross-patient probe | 90 (104 before the one-item-per-patient-pair cap) |
-| Patients / admissions covered by multi-document items | 68 / 229 |
+| Eligible population (patients with ≥1 note linked to an admission) | 161,180 patients; 374,285 admissions |
+| Selected patients / admissions / PDFs | 300 / 685 / 685 |
+| Notes rendered | 614 discharge summaries + 2,076 radiology reports (Note v2.2 has no nursing/physician/consult tables) |
+| Single-document items | 1,370 (2 per admission): header_fact 229, header_fact_enriched 229, section_lookup 228, specific_detail 228, negation_check 228, multi_admission_distractor 228 |
+| Multi-document, same-patient pairs | 289 (385 consecutive pairs before grounding and caps) |
+| Multi-document, trajectories | 130 (256 before grounding and caps) |
+| Multi-document, cross-patient probe | 343 (490 before grounding and the one-item-per-patient-pair cap) |
+| Patients / admissions covered by multi-document items | 183 / 550 |
 | Grounding failures | 0 |
+| Step 1 run time / peak memory | ~3 min / 3.5 GB RSS |
 
-What these numbers reflect about the **synthetic** demo notes, not about the code:
+- The selected sample matches the population shares of every balanced variable to within 0.3
+  percentage points (see `mimic_stratified_sample_report.md`).
+- 71 of the 685 selected admissions have radiology reports but no discharge summary. Their PDFs
+  contain radiology notes only.
 
-- `negation_check` is 0 because the mock discharge notes have no "Allergies:" section.
-- All gold evidence is on page 1 because the mock notes are short.
-- All radiology answers are identical ("No acute cardiopulmonary abnormalities.") because the mock
-  generator writes the same report for every admission.
-
-The optional nursing, physician, and consult path was exercised separately, with throwaway
-synthetic tables outside the repository. All three categories were ingested, rendered, and turned
-into grounded first-person `section_lookup` items with 0 grounding failures.
+The optional nursing, physician, and consult path was verified separately, with test tables in the
+MIMIC-IV-Note schema kept outside the repository. All three categories were ingested, rendered, and
+turned into grounded first-person `section_lookup` items with 0 grounding failures.
 
 ## Historical provenance (original MIMIC-III release)
 
@@ -285,17 +315,30 @@ To reproduce the paper's exact MIMIC-III corpus, check out the scripts at commit
 
 ## What is *not* included here
 
-- **Raw data:** no MIMIC tables or derived JSON/PDF/JSONL files are committed. Credentialed data
+- **Raw data and outputs:** no MIMIC tables or derived JSON/PDF/JSONL files are committed. They
+  live in `WORK_DIR`, outside the repository, and are excluded by `.gitignore`. Credentialed data
   cannot be redistributed under the PhysioNet DUA.
-- **Real MIMIC-IV-Note text:** the local `data/` folder only contains the public demo with
-  synthetic notes. Regenerating the benchmark from real MIMIC-IV requires credentialed access to
-  MIMIC-IV and MIMIC-IV-Note.
+- **Real MIMIC-IV / MIMIC-IV-Note tables:** they are read from the folders configured in
+  `shared/pipeline_paths.py`, outside the repository. Regenerating the benchmark requires
+  credentialed PhysioNet access to MIMIC-IV v3.1 and MIMIC-IV-Note v2.2.
 
 ---
 
 ## Changelog
 
-### 2026-09-24 — MIMIC-III → MIMIC-IV refactoring, multi-note corpus, first-person questions
+### Overview
+
+Every change since the MIMIC-III baseline (commit `1610baf`), by theme:
+
+| Theme | What changed | Section |
+|---|---|---|
+| **MIMIC-IV migration** | MIMIC-III → MIMIC-IV v3.1 (`hosp`, `icu`) and MIMIC-IV-Note v2.2 (`note`), read from three configurable folders | §A |
+| **Broader cohort** | Mental-health filtering and stratification removed; marginal balancing on sex, age, race group, and note length | §B |
+| **Multi-note support** | Discharge, radiology, nursing, physician, and consult notes ingested, parsed, rendered, and queried (nursing, physician, and consult are optional because Note v2.2 does not ship them) | §C |
+| **First-person questions** | Every single-document, multi-document, and trajectory question is phrased from the patient's point of view and validated before writing | §D |
+| **Strict multi-document capping** | Consecutive admissions only; at most 4 pairs and 2 trajectories per patient and 1 cross-patient item per patient pair, asserted at validation | §E |
+
+### 2026-09-24 – 2026-09-25 — MIMIC-III → MIMIC-IV v3.1 + MIMIC-IV-Note v2.2, multi-note corpus, first-person questions
 
 The baseline for everything below is commit `1610baf`. At that commit the tree already contained
 partial, uncommitted-at-the-time edits toward a multi-category corpus:
@@ -309,12 +352,21 @@ partial, uncommitted-at-the-time edits toward a multi-category corpus:
 The README at that commit still described the original MIMIC-III, mental-health-stratified
 pipeline. Changes are grouped by theme, then by file.
 
-#### A. Data source: MIMIC-III → MIMIC-IV, read from the project `data/` folder
+#### A. Data source: MIMIC-III → MIMIC-IV v3.1 and MIMIC-IV-Note v2.2
 
 1. **New `shared/pipeline_paths.py`.** A single place for every input and output path:
-   - `DEFAULT_DATA_DIR` = `<project root>/data/mimic-iv-clinical-database-demo-2.2`, overridable
-     with the `ANAMNESIS_DATA_DIR` environment variable.
-   - `WORK_DIR` = `rebuild_anamnesis/`, overridable with `ANAMNESIS_WORK_DIR`.
+   - Three input-folder settings, one per module, since MIMIC-IV-Note is distributed separately
+     from MIMIC-IV and usually lives elsewhere on disk:
+     - `MIMIC_IV_HOSP_DIR` = `/home/tommaso/datasets/MIMICIV/3.1/hosp`, overridable with
+       `ANAMNESIS_HOSP_DIR`
+     - `MIMIC_IV_ICU_DIR` = `/home/tommaso/datasets/MIMICIV/3.1/icu`, overridable with
+       `ANAMNESIS_ICU_DIR`
+     - `MIMIC_IV_NOTE_DIR` = `/home/tommaso/datasets/MIMICIV/mimic-iv-note/2.2/note`,
+       overridable with `ANAMNESIS_NOTE_DIR`
+   - `WORK_DIR` = `/home/tommaso/anamnesis_output`, outside the repository, overridable with
+     `ANAMNESIS_WORK_DIR`. Generated outputs previously tracked in `rebuild_anamnesis/` (the
+     sample JSON and report, the QA JSONL files, and the PDF folder) were deleted from the
+     repository.
    - Derived paths: `SAMPLE_JSON`, `SAMPLE_REPORT_MD`, `PDF_DIR`, `SINGLE_QA_PATH`,
      `MULTIDOC_QA_PATH`, `MULTIDOC_SAME_PATIENT_PATH`, `MULTIDOC_CROSS_PATIENT_PATH`.
    - `admission_pdf_name()` builds `Patient_{subject_id}_Admission_{hadm_id}.pdf`.
@@ -322,8 +374,8 @@ pipeline. Changes are grouped by theme, then by file.
    Before this, each script defined its own `BASE_DIR`-relative paths, and step 1 defaulted to
    `/gringotts/datasets/MIMIC-III`.
 2. **New `shared/mimic_iv.py`.** MIMIC-IV schema knowledge:
-   - `find_table` / `require_table` / `module_dirs`: `.csv.gz` or `.csv` lookup in
-     `<data-dir>/<module>/`, then in `<data-dir>/`.
+   - `find_table` / `require_table`: `<table>.csv.gz`, then `<table>.csv`, inside one module
+     folder. `require_table` raises `FileNotFoundError` naming the folder it searched.
    - `ADMISSION_TYPE_LABELS`: the nine MIMIC-IV admission types become readable labels, e.g.
      `EW EMER.` → "Emergency", `SURGICAL SAME DAY ADMISSION` → "Surgical same-day admission".
    - `SERVICE_LABELS`: the 21 `services.curr_service` codes become readable names, e.g. `CMED` →
@@ -331,11 +383,14 @@ pipeline. Changes are grouped by theme, then by file.
    - `DISCHARGE_LOCATION_LABELS` and `label_discharge_location()`: sentence-case labels, with
      overrides such as `HOME HEALTH CARE` → "Home with home health care" and `AGAINST ADVICE` →
      "Left against medical advice". `DIED` maps to no destination.
+   - All admission types, services, and discharge locations present in MIMIC-IV v3.1 are covered
+     by these maps.
    - `resolve_disposition()`, shared by steps 2 and 3 so the header and the QA evidence always
      agree.
    - `race_group()`: collapses MIMIC-IV `race` into White / Black / Hispanic or Latino / Asian /
      Other / Unknown.
-   - The note-source registry (see C).
+   - The note-source registry (see C) and `NOTE_DETAIL_COLUMNS`, the detail-table columns step 1
+     reads.
 3. **`extract_stratified_sample.py` rewritten for the MIMIC-IV schema.**
    - Lowercase MIMIC-IV column names throughout (`subject_id`, `hadm_id`, …) instead of MIMIC-III
      uppercase.
@@ -359,9 +414,23 @@ pipeline. Changes are grouped by theme, then by file.
    - **Discharge disposition:** taken from the structured `admissions.discharge_location`
      (readable label plus raw code). It was previously parsed from the note body only.
    - New per-admission fields: `insurance`, `race`, `note_categories`.
-   - New CLI:
-     - `--data-dir` (replaces `--base-dir`; default is the project `data/` folder)
-     - `--note-dir` (for the separately distributed MIMIC-IV-Note module)
+   - **Note detail tables:** MIMIC-IV-Note v2.2 detail tables are `note_id, subject_id,
+     field_name, field_value, field_ordinal`. Only `NOTE_DETAIL_COLUMNS` are read, and
+     `field_ordinal` orders multi-valued fields (e.g. several `exam_code` rows). `field_ordinal`
+     is optional, so three-column detail tables also load.
+   - New CLI: `--hosp-dir`, `--icu-dir`, and `--note-dir` (replacing `--base-dir`), each
+     defaulting to the matching `pipeline_paths` setting. Step 1 prints the three folders and
+     exits with a clear message when one does not exist.
+   - **Full-scale memory and speed:**
+     - Note text is streamed in 25,000-row chunks (`NOTE_CHUNK_ROWS`); a 100,000-row chunk of
+       Note v2.2 discharge summaries would hold ~1.1 GB of text.
+     - Detail tables are streamed in 500,000-row chunks (`DETAIL_CHUNK_ROWS`);
+       `radiology_detail` alone has ~6 million rows.
+     - Phase 1 sums note lengths with vectorized per-chunk `groupby`.
+     - `build_records()` filters admission attributes to the selected patients once, instead of
+       scanning all ~546,000 admissions per patient.
+
+     The full run takes ~3 minutes with a 3.5 GB peak (see "Reference run").
    - `patients` is loaded once and indexed by `subject_id`. Patients and admissions are emitted in
      deterministic order: by `subject_id`, then by `admittime` and `hadm_id`.
    - Fixed a pandas `FutureWarning`: `had_icu_stay` is now computed with `.eq(True)` instead of a
@@ -407,7 +476,7 @@ pipeline. Changes are grouped by theme, then by file.
      - The candidate order is `sorted(subject_id)` shuffled with `random.Random(seed)`, so it is
        deterministic.
    - Default sample size is `--n 300`. When the eligible population is smaller, all eligible
-     patients are kept and a message is logged (the demo has 100).
+     patients are kept and a message is logged.
    - The balance report (`mimic_stratified_sample_report.md`) now covers MIMIC-IV, all four
      marginals, and the note count per category.
 
@@ -539,14 +608,15 @@ pipeline. Changes are grouped by theme, then by file.
       patient.
     - `validate_final()` asserts every cap.
     - The run log prints the caps and the pre-cap candidate counts.
-20. **Effect on the demo data:**
-    - same-patient pairs: 741 → 112
-    - trajectories: 127 → 47
-    - cross-patient items: 104 → 90
-    - total: 972 → 249
+20. **Effect on the reference run** (300 patients, see "Reference run"), eligible source sets →
+    final items after grounding and caps:
+    - same-patient pairs: 385 → 289
+    - trajectories: 256 → 130
+    - cross-patient items: 490 → 343
+    - total: 1,131 → 762
 
-    All 68 multi-admission patients are still covered, and field balance is exact (28 items per
-    field for pairs). Rationale: see "Why multi-document items are capped" above.
+    All 129 multi-admission patients are still covered by same-patient items, and per-field counts
+    are within one item of each other. Rationale: see "Why multi-document items are capped" above.
 
 #### F. Other script updates
 
@@ -561,5 +631,8 @@ pipeline. Changes are grouped by theme, then by file.
     "Categorie di note cliniche incluse…") were removed or rewritten.
 24. **Unchanged files:** `shared/kotlin_mirror.py` (the Android chunking port) and
     `shared/pdf_paging.py`, so gold-chunk boundaries remain identical to the on-device app.
-25. **Scope:** only files inside `rebuild_anamnesis/` were modified or added. The Android
-    application, `data/`, and all other project files were left untouched.
+25. **Repository hygiene:** new `rebuild_anamnesis/.gitignore` ignores every pipeline output file
+    name, `*.pdf`, `*.jsonl`, and `__pycache__/`. The previously tracked `shared/__pycache__/*.pyc`
+    files were removed from version control.
+26. **Scope:** only files inside `rebuild_anamnesis/` were modified or added. The Android
+    application and all other project files were left untouched.
